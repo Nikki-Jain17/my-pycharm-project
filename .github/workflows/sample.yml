@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   test:
-    runs-on: windows-latest  # Use Ubuntu for compatibility
+    runs-on: windows-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -18,8 +18,32 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
-
-      
+          pip install allure-pytest  # Install Allure
 
       - name: Run Selenium Tests
-        run: pytest cart_testing.py
+        run: |
+          pytest --alluredir=allure-results || true
+
+      - name: Generate Allure Report
+        if: always()
+        run: |
+          mkdir allure-report
+          allure generate allure-results --clean -o allure-report
+
+      - name: Upload Allure Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: allure-report
+          path: allure-report
+
+      - name: Upload Screenshots (on Failure)
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: failed-test-screenshots
+          path: screenshots/
+
+      - name: Send Notification
+        if: always()
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data '{"text":"GitHub Actions: Selenium tests completed. Check reports."}' ${{ secrets.SLACK_WEBHOOK_URL }}
