@@ -37,7 +37,4 @@ jobs:
           name: failed-test-screenshots
           path: screenshots/
 
-      - name: Send Notification
-        if: always()
-        run: |
-          curl -X POST -H 'Content-type: application/json' --data '{"text":"GitHub Actions: Selenium tests completed. Check HTML report & screenshots."}' ${{ secrets.SLACK_WEBHOOK_URL }}
+      
