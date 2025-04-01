@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   test:
-    runs-on: ubuntu-latest  # Use Ubuntu for compatibility
+    runs-on: windows-latest  # Use Ubuntu for compatibility
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -19,14 +19,7 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Install Chrome and ChromeDriver
-        run: |
-          sudo apt update
-          sudo apt install -y google-chrome-stable
-          sudo apt install -y chromium-chromedriver
-          echo "Chrome and ChromeDriver installed"
-          google-chrome --version
-          chromedriver --version
+      
 
       - name: Run Selenium Tests
         run: pytest cart_testing.py
