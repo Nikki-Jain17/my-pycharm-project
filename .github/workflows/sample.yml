@@ -27,4 +27,4 @@ jobs:
           echo "Chrome and ChromeDriver installed"
 
       - name: Run Selenium Tests
-        run: pytest 
+        run: pytest test cart_testing.py
