@@ -25,6 +25,8 @@ jobs:
           sudo apt install -y google-chrome-stable
           sudo apt install -y chromium-chromedriver
           echo "Chrome and ChromeDriver installed"
+          google-chrome --version
+          chromedriver --version
 
       - name: Run Selenium Tests
         run: pytest cart_testing.py
