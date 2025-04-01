@@ -39,4 +39,4 @@ jobs:
 
       - name: Send Notification
         if: always()
-        run: echo "Tests completed
+        run: echo "Tests completed"
