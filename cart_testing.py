@@ -11,9 +11,10 @@ def test_open_google():
 
     # Manually provide ChromeDriver path
     #service = Service("C:/Users/adijain17/Downloads/chromedriver-win64/chromedriver-win64/chromedriver.exe")
-    #driver = webdriver.Chrome(service=service, options=chrome_options)
-    driver = webdriver.Chrome()
-    driver.maximize_window()
+    service = Service()
+    driver = webdriver.Chrome(service=service, options=chrome_options)
+
+
 
     driver.get("https://rahulshettyacademy.com/seleniumPractise/#/")
     driver.find_element(By.XPATH,"//*[text()='Brocolli - 1 Kg']/parent::div//button").click()
