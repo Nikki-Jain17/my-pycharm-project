@@ -37,4 +37,6 @@ jobs:
           name: failed-test-screenshots
           path: screenshots/
 
-      
+      - name: Send Notification
+        if: always()
+        run: echo "Tests completed
