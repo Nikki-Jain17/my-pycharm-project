@@ -44,11 +44,10 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run Test Data Generation
-        run: python TestDataGenerationViaMetadata.py
+        run: python metadata_driven/TestDataGenerationViaMetadata.py
 
   # Step 3: Test Case Execution (Always Runs)
   testCaseExecution:
-    needs: check-config  # Fix: Removed dependency on testDataCreation
     runs-on: windows-latest
     steps:
       - name: Checkout Repository
@@ -60,10 +59,12 @@ jobs:
           python-version: '3.13'
 
       - name: Install Dependencies
-        run: pip install -r requirements.txt
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-html  # Explicitly install pytest-html
 
       - name: Run Selenium Tests
-        run: pytest --html=reports/test_report.html --self-contained-html
+        run: pytest --html=reports/test_report.html --self-contained-html  # Now pytest-html should work
 
       - name: Upload Test Report
         uses: actions/upload-artifact@v4
@@ -71,9 +72,9 @@ jobs:
           name: selenium-test-report
           path: reports/test_report.html
 
+
   # Step 4: Data Reconciliation (Runs After Test Execution)
   dataReconciliation:
-    needs: testCaseExecution
     runs-on: windows-latest
     steps:
       - name: Checkout Repository
@@ -84,7 +85,6 @@ jobs:
 
   # Step 5: Reporting (Final Step)
   reporting:
-    needs: dataReconciliation
     runs-on: windows-latest
     steps:
       - name: Checkout Repository
