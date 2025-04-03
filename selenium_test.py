@@ -20,7 +20,7 @@ def test_add_to_cart(driver):
     """Test adding an item to the cart."""
     driver.get("https://rahulshettyacademy.com/seleniumPractise/#/")
     driver.find_element(By.XPATH, "//*[text()='Brocolli - 1 Kg']/parent::div//button").click()
-    driver.find_element(By.XPATH, "//a[@class='car-icon']//img").click()
+    driver.find_element(By.XPATH, "//a[@class='cart-icon']//img").click()
     time.sleep(2)
 
 @pytest.hookimpl(hookwrapper=True)
