@@ -1,9 +1,28 @@
-name: Run Selenium Tests
+name: Selenium Test Pipeline
 
 on: [push, pull_request]
 
 jobs:
-  test:
+  # Step 1: Read createTestData flag from config.yaml
+  check-config:
+    runs-on: windows-latest
+    outputs:
+      createTestData: ${{ steps.read-flag.outputs.createTestData }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Read createTestData Flag
+        id: read-flag
+        run: |
+          createTestData=$(yq e '.createTestData' config.yaml)
+          echo "createTestData=${createTestData}" >> $GITHUB_ENV
+          echo "::set-output name=createTestData::${createTestData}"
+
+  # Step 2: Conditional Test Data Creation Job
+  testDataCreation:
+    needs: check-config
+    if: needs.check-config.outputs.createTestData == 'true'  # Only run if flag is true
     runs-on: windows-latest
     steps:
       - name: Checkout Repository
@@ -15,28 +34,60 @@ jobs:
           python-version: '3.13'
 
       - name: Install Dependencies
-        run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest-html  # Install pytest-html for reporting
+        run: pip install -r requirements.txt
 
-      - name: Run Selenium Tests with HTML Report
-        run: |
-          pytest --html=reports/test_report.html || true
+      - name: Run Test Data Generation
+        run: python TestDataGenerationViaMetadata.py
 
-      - name: Upload HTML Report
+  # Step 3: Test Case Execution (Always Runs)
+  testCaseExecution:
+    needs: [check-config, testDataCreation]
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set Up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Selenium Tests
+        run: pytest --html=reports/test_report.html --self-contained-html
+
+      - name: Upload Test Report
         uses: actions/upload-artifact@v4
         with:
-          name: test-report
+          name: selenium-test-report
           path: reports/test_report.html
 
-      - name: Upload Screenshots (on Failure)
-        if: failure()
+  # Step 4: Data Reconciliation (Runs After Test Execution)
+  dataReconciliation:
+    needs: testCaseExecution
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Run Data Reconciliation
+        run: echo "Tests completed"
+
+  # Step 5: Reporting (Final Step)
+  reporting:
+    needs: dataReconciliation
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Generate Report
+        run: python generate_report.py
+
+      - name: Upload Final Report
         uses: actions/upload-artifact@v4
         with:
-          name: failed-test-screenshots
-          path: screenshots/
-
-      - name: Send Notification
-        if: always()
-        run: echo "Tests completed"
+          name: final-report
+          path: reports/final_report.html
