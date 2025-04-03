@@ -12,12 +12,15 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Read createTestData Flag
+      - name: Read createTestData Flag (PowerShell)
         id: read-flag
+        shell: pwsh
         run: |
-          createTestData=$(yq e '.createTestData' config.yaml)
-          echo "createTestData=${createTestData}" >> $GITHUB_ENV
-          echo "::set-output name=createTestData::${createTestData}"
+          $yamlContent = Get-Content config.yaml | ConvertFrom-Yaml
+          $createTestData = $yamlContent.createTestData
+          echo "createTestData=$createTestData" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "::set-output name=createTestData::$createTestData"
+
 
   # Step 2: Conditional Test Data Creation Job
   testDataCreation:
