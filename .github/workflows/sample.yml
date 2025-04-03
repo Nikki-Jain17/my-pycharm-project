@@ -12,17 +12,19 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
+      - name: Install YAML Dependencies
+        run: pip install pyyaml
+
       - name: Read createTestData Flag (PowerShell)
         id: read-flag
         shell: pwsh
         run: |
-          $yamlPath = "config.yaml"
-          $jsonContent = python -c "import sys, yaml, json; print(json.dumps(yaml.safe_load(open('$yamlPath'))))"
+          $jsonContent = python -c "import yaml, json; print(json.dumps(yaml.safe_load(open('config.yaml'))))"
           $config = $jsonContent | ConvertFrom-Json
-          $createTestData = $config.createTestData
-          echo "createTestData=$createTestData" | Out-File -FilePath $env:GITHUB_ENV -Append
-          echo "::set-output name=createTestData::$createTestData"
+          echo "createTestData=$($config.createTestData)" | Out-File -FilePath $env:GITHUB_ENV -Append
 
+      - name: Show Flag Value
+        run: echo "createTestData is ${{ env.createTestData }}"
 
 
   # Step 2: Conditional Test Data Creation Job
