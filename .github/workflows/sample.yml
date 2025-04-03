@@ -26,6 +26,10 @@ jobs:
       - name: Show Flag Value
         run: echo "createTestData is ${{ env.createTestData }}"
 
+      - name: Install Dependencies
+        if: env.createTestData == 'true'
+        run: pip install -r requirements.txt
+
       - name: Run Test Data Generation (If Flag is True)
         if: env.createTestData == 'true'  # Only runs if the flag is true
         run: python metadata_driven/TestDataGenerationViaMetadata.py
