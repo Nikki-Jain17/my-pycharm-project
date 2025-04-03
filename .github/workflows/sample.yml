@@ -4,10 +4,10 @@ on: [push, pull_request]
 
 jobs:
   # Step 1: Read createTestData flag from config.yaml
-  check-config:
+  testDataCheckAndCreation:
     runs-on: windows-latest
     outputs:
-      createTestData: ${{ env.createTestData }}  # Fix: Read from env instead of outputs
+      createTestData: ${{ steps.read-flag.outputs.createTestData }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -26,28 +26,14 @@ jobs:
       - name: Show Flag Value
         run: echo "createTestData is ${{ env.createTestData }}"
 
-  # Step 2: Conditional Test Data Creation Job
-  testDataCreation:
-    needs: check-config
-    if: needs.check-config.outputs.createTestData == 'true' || needs.check-config.outputs.createTestData == 'True'  # Fix: Handle case variations
-    runs-on: windows-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-
-      - name: Set Up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.13'
-
-      - name: Install Dependencies
-        run: pip install -r requirements.txt
-
-      - name: Run Test Data Generation
+      - name: Run Test Data Generation (If Flag is True)
+        if: env.createTestData == 'true'  # Only runs if the flag is true
         run: python metadata_driven/TestDataGenerationViaMetadata.py
 
-  # Step 3: Test Case Execution (Always Runs)
+
+  # Step 2: Test Case Execution (Always Runs)
   testCaseExecution:
+    needs: testDataCheckAndCreation
     runs-on: windows-latest
     steps:
       - name: Checkout Repository
@@ -73,7 +59,7 @@ jobs:
           path: reports/test_report.html
 
 
-  # Step 4: Data Reconciliation (Runs After Test Execution)
+  # Step 3: Data Reconciliation (Runs After Test Execution)
   dataReconciliation:
     needs: testCaseExecution
     runs-on: windows-latest
@@ -84,4 +70,4 @@ jobs:
       - name: Run Data Reconciliation
         run: echo "Tests completed"
 
-  
+
