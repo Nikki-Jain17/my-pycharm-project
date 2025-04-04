@@ -1,3 +1,4 @@
+import os
 import time
 import pytest
 from selenium import webdriver
@@ -31,6 +32,12 @@ def pytest_runtest_makereport(item, call):
 
     if report.when == "call" and report.failed:
         driver = item.funcargs["driver"]
+
+        # Ensure screenshots folder exists
+        screenshots_dir = "screenshots"
+        if not os.path.exists(screenshots_dir):
+            os.makedirs(screenshots_dir)
+
         screenshot_path = f"screenshots/{item.name}.png"
         driver.save_screenshot(screenshot_path)
         print(f"Screenshot saved: {screenshot_path}")
