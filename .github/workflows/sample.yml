@@ -32,7 +32,8 @@ jobs:
 
       - name: Run Test Data Generation (If Flag is True)
         if: env.createTestData == 'true'  # Only runs if the flag is true
-        run: python metadata_driven/TestDataGenerationViaMetadata.py
+        working-directory: metadata_driven
+        run: python TestDataGenerationViaMetadata.py
 
 
   # Step 2: Test Case Execution (Always Runs)
