@@ -72,7 +72,7 @@ if __name__ == '__main__':
     start_time = time.time()  # Record the start time
 
     # Read column names, data types, and sample values from JSON configuration
-    with open('metadata_driven/metadata_config.json', 'r') as file:
+    with open('metadata_config.json', 'r') as file:
         config = json.load(file)
     columns = [col['name'] for col in config['columns']]
     dtypes = {col['name']: col['dtype'] for col in config['columns']}
