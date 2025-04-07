@@ -38,6 +38,12 @@ jobs:
       - name: List Generated Files
         run: dir metadata_driven
 
+      - name: Upload Generated Test Data
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-trade-data
+          path: metadata_driven/trade_data_with_line_numbers.csv
+
 
   # Step 2: Test Case Execution (Always Runs)
   testCaseExecution:
