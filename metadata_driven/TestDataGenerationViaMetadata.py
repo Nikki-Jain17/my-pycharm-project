@@ -11,7 +11,7 @@ fake = Faker()
 Faker.seed(42)
 
 # Setup constants and configurations
-num_records = 1_000_000
+num_records = 1_000_0
 tickers = ['AAPL', 'GOOGL', 'MSFT', 'AMZN', 'FB', 'TSLA', 'NFLX']
 markets = ['NYSE', 'NASDAQ', 'OTC']
 trade_types = ['buy', 'sell']
@@ -83,6 +83,10 @@ if __name__ == '__main__':
 
     # Convert to Pandas DataFrame with specified data types
     data = pd.DataFrame(data_array, columns=columns).astype(dtypes)
+
+    print(len(data))
+    # or
+    print(data.shape[0])
 
     # Add line numbers
     ##data.insert(0, 'line_number', range(1, len(data) + 1))

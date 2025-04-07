@@ -35,6 +35,9 @@ jobs:
         working-directory: metadata_driven
         run: python TestDataGenerationViaMetadata.py
 
+      - name: List Generated Files
+        run: dir metadata_driven
+
 
   # Step 2: Test Case Execution (Always Runs)
   testCaseExecution:
