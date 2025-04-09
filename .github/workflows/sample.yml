@@ -82,8 +82,14 @@ jobs:
 
       - name: Determine Test Marker
         id: marker
+        shell: pwsh
         run: |
+          # Default to "all" if input is not provided (e.g., on push or PR)
           $group = "${{ github.event.inputs.selected_group }}"
+          if ([string]::IsNullOrEmpty($group)) {
+            $group = "all"
+          }
+
           if ($group -eq "all") {
             echo "MARKER=" | Out-File -FilePath $env:GITHUB_ENV -Append
           } elseif ($group -eq "dataset_registration") {
@@ -95,7 +101,12 @@ jobs:
           }
 
       - name: Run Selected Tests by Marker
-        run: pytest tests/ ${{ env.MARKER }} --html=reports/test_report.html --self-contained-html
+        run: |
+          if [ -z "${{ env.MARKER }}" ]; then
+            pytest tests/ --html=reports/test_report.html --self-contained-html
+          else
+            pytest tests/ ${{ env.MARKER }} --html=reports/test_report.html --self-contained-html
+          fi
 
       - name: Upload Test Report
         uses: actions/upload-artifact@v4
