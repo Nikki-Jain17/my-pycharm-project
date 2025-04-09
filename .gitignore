@@ -3,4 +3,5 @@ __pycache__/
 venv/
 # Ignore all CSV files
 *.csv
+echo "reports/" >> .gitignore
 
