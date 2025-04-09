@@ -101,12 +101,14 @@ jobs:
           }
 
       - name: Run Selected Tests by Marker
+        shell: pwsh
         run: |
-          if [ -z "${{ env.MARKER }}" ]; then
+          if ([string]::IsNullOrEmpty("${{ env.MARKER }}")) {
             pytest tests/ --html=reports/test_report.html --self-contained-html
-          else
+          } else {
             pytest tests/ ${{ env.MARKER }} --html=reports/test_report.html --self-contained-html
-          fi
+          }
+      
 
       - name: Upload Test Report
         uses: actions/upload-artifact@v4
