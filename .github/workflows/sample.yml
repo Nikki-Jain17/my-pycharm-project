@@ -1,8 +1,6 @@
 name: Selenium Test Pipeline
 
 on:
-  push:
-  pull_request:
   workflow_dispatch:
     inputs:
       selected_group:
@@ -13,12 +11,12 @@ on:
         options:
           - all
           - dataset_registration
-          - physical
-          - virtual
-          - end_to_end_flows
-          - sql_to_azure
-          - nas_to_azure
-          - s3_to_azure
+          - dataset_physical
+          - dataset_virtual
+          - taskflows
+          - end_to_end_sql
+          - end_to_end_nas
+          - end_to_end_s3
 
 jobs:
   # Step 1: Test Data Check and Creation
@@ -62,59 +60,74 @@ jobs:
           name: generated-trade-data
           path: metadata_driven/trade_data_with_line_numbers.csv
 
-  # Step 2: Test Case Execution
-  testCaseExecution:
+  # Step 2: Parent Job - Test Case Execution
+  test_execution:
     needs: testDataCheckAndCreation
+    if: ${{ github.event.inputs.selected_group != '' }}
     runs-on: windows-latest
+    steps:
+      - name: Test Execution Hub
+        run: echo "Starting test execution parent job..."
+
+  # Step 2.1: Dataset Registration (Organizational Layer)
+  testCaseExecution_dataset_registration:
+    needs: [ testDataCheckAndCreation, test_execution ]
+    if: ${{ github.event.inputs.selected_group == 'dataset_registration' || github.event.inputs.selected_group == 'all' }}
+    runs-on: windows-latest
+    steps:
+      - name: Note
+        run: echo "MARKER=-m 'physical or virtual'" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Run Registration Dataset Tests
+        run: pytest tests/ $MARKER --html=reports/data_registration_report.html --self-contained-html
+
+  # Step 2.1.1: Physical Dataset Test Execution
+  testCaseExecution_dataset_physical:
+    needs: [ testDataCheckAndCreation, test_execution, testCaseExecution_dataset_registration ]
+    if: ${{ github.event.inputs.selected_group == 'dataset_physical' || github.event.inputs.selected_group == 'dataset_registration' || github.event.inputs.selected_group == 'all' }}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Set Up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.13'
-
       - name: Install Dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install pytest pytest-html
+        run: pip install -r requirements.txt
 
-      - name: Determine Test Marker
-        id: marker
-        shell: pwsh
-        run: |
-          # Default to "all" if input is not provided (e.g., on push or PR)
-          $group = "${{ github.event.inputs.selected_group }}"
-          if ([string]::IsNullOrEmpty($group)) {
-            $group = "all"
-          }
+      - name: Set Marker for Physical Tests
+        run: echo "MARKER=-m 'physical'" >> $GITHUB_ENV
 
-          if ($group -eq "all") {
-            echo "MARKER=" | Out-File -FilePath $env:GITHUB_ENV -Append
-          } elseif ($group -eq "dataset_registration") {
-            echo "MARKER=-m 'physical or virtual'" | Out-File -FilePath $env:GITHUB_ENV -Append
-          } elseif ($group -eq "end_to_end_flows") {
-            echo "MARKER=-m 'sql_to_azure or nas_to_azure or s3_to_azure'" | Out-File -FilePath $env:GITHUB_ENV -Append
-          } else {
-            echo "MARKER=-m $group" | Out-File -FilePath $env:GITHUB_ENV -Append
-          }
+      - name: Run Physical Dataset Tests
+        run: pytest tests/ $MARKER --html=reports/physical_report.html --self-contained-html
 
-      - name: Run Selected Tests by Marker
-        shell: pwsh
-        run: |
-          if ([string]::IsNullOrEmpty("${{ env.MARKER }}")) {
-            pytest tests/ --html=reports/test_report.html --self-contained-html
-          } else {
-            pytest tests/ ${{ env.MARKER }} --html=reports/test_report.html --self-contained-html
-          }
-      
-
-      - name: Upload Test Report
+      - name: Upload Physical Dataset Report
         uses: actions/upload-artifact@v4
         with:
-          name: selenium-test-report
-          path: reports/test_report.html
+          name: physical-report
+          path: reports/physical_report.html
+
+  # Step 2.1.2: Virtual Dataset Test Execution
+  testCaseExecution_dataset_virtual:
+    needs: [ testDataCheckAndCreation, test_execution, testCaseExecution_dataset_registration ]
+    if: ${{ github.event.inputs.selected_group == 'dataset_virtual' || github.event.inputs.selected_group == 'dataset_registration' || github.event.inputs.selected_group == 'all' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: Set Marker for Virtual Tests
+        run: echo "MARKER=-m 'virtual'" >> $GITHUB_ENV
+
+      - name: Run Virtual Dataset Tests
+        run: pytest tests/ $MARKER --html=reports/virtual_report.html --self-contained-html
+
+      - name: Upload Virtual Dataset Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: virtual-report
+          path: reports/virtual_report.html
 
   # Step 3: Data Reconciliation
   dataReconciliation:
