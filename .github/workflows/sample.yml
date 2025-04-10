@@ -1,6 +1,8 @@
 name: Selenium Test Pipeline
 
 on:
+  push:
+  pull_request:
   workflow_dispatch:
     inputs:
       selected_group:
