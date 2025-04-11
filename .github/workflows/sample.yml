@@ -119,13 +119,13 @@ jobs:
           component: [ register_dataset, register_schema, register_task, register_task_flows ]
       steps:
         - name: Checkout Repository
-        - uses: actions/checkout@v3
+          uses: actions/checkout@v3
 
         - name: Install Dependencies
-        - run: pip install -r requirements.txt
+          run: pip install -r requirements.txt
 
         - name: Install Pytest and Reporting Plugin
-        - run: pip install pytest pytest-html
+          run: pip install pytest pytest-html
 
         - name: Run Component ${{ matrix.component }}
           if: ${{ github.event.inputs.component == matrix.component }}
@@ -158,7 +158,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Install Pytest and Reporting Plugin
-      - run: pip install pytest pytest-html
+        run: pip install pytest pytest-html
 
       - name: Run Priority Test for ${{ matrix.flow }} - ${{ matrix.priority }}
         if: ${{ github.event.inputs.priority == matrix.priority }}
