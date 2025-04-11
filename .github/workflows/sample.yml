@@ -1,28 +1,50 @@
-name: Selenium Test Pipeline
+name: End-to-End Test Execution Pipeline
 
 on:
   push:
   pull_request:
   workflow_dispatch:
     inputs:
-      selected_group:
-        description: "Select the test group to run"
+      flows:
+        description: "Select end-to-end flow"
         required: true
-        default: "all"
+        default: "ALL"
         type: choice
         options:
-          - all
-          - dataset_registration
-          - dataset_physical
-          - dataset_virtual
-          - taskflows
-          - end_to_end_sql
-          - end_to_end_nas
-          - end_to_end_s3
+          - ALL
+          - sql_to_azure
+          - nas_to_azure
+          - s3_to_azure
+          - sybase_to_azure
+          - HDFS_to_Azure
+          - REST_API_to_Azure
+
+      component:
+        description: "Select component to execute"
+        required: false
+        default: "none"
+        type: choice
+        options:
+          - none
+          - register_dataset
+          - register_schema
+          - register_task
+          - register_task_flows
+
+      priority:
+        description: "Select priority level"
+        required: false
+        default: "none"
+        type: choice
+        options:
+          - none
+          - P1
+          - P2
+          - P3
 
 jobs:
   # Step 1: Test Data Check and Creation
-  testDataCheckAndCreation:
+  test_data_generation:
     runs-on: windows-latest
     outputs:
       createTestData: ${{ steps.read-flag.outputs.createTestData }}
@@ -63,31 +85,53 @@ jobs:
           path: metadata_driven/trade_data_with_line_numbers.csv
 
   # Step 2: Parent Job - Test Case Execution
-  test_execution:
-    needs: testDataCheckAndCreation
-    if: ${{ github.event.inputs.selected_group != '' }}
+  workflow_execution:
+    needs: test_data_generation
+    if: ${{ github.event.inputs.flows == 'ALL' }}
     runs-on: windows-latest
     steps:
-      - name: Test Execution Hub
-        run: echo "Starting test execution parent job..."
+      - name: Execute Default Flow
+        run: pytest sql_to_azure.py --html=reports/sql_to_azure_report.html --self-contained-html
 
-  # Step 2.1: Dataset Registration (Organizational Layer)
-  testCaseExecution_dataset_registration:
-    needs: [ testDataCheckAndCreation, test_execution ]
-    if: ${{ github.event.inputs.selected_group == 'dataset_registration' || github.event.inputs.selected_group == 'all' }}
+  end_to_end_workflow_execution:
+      needs: test_data_generation
+      if: ${{ github.event.inputs.flows != 'ALL' }}
+      runs-on: windows-latest
+      steps:
+        - name: Run selected end-to-end flow
+          run: pytest ${{ github.event.inputs.flows }}.py --html=reports/${{ github.event.inputs.flows }}_report.html --self-contained-html
+
+  independent_component_execution:
+      needs: test_data_generation
+      if: ${{ github.event.inputs.component != 'none' && github.event.inputs.flows != 'ALL' }}
+      runs-on: windows-latest
+      strategy:
+        matrix:
+          component: [ register_dataset, register_schema, register_task, register_task_flows ]
+      steps:
+        - name: Run Component ${{ matrix.component }}
+          if: ${{ github.event.inputs.component == matrix.component }}
+          run: pytest ${{ github.event.inputs.flows }}.py -m ${{ matrix.component }} --html=reports/${{ github.event.inputs.flows }}_${{ matrix.component }}.html --self-contained-html
+
+  priority_test_case_execution:
+    needs: test_data_generation
+    if: ${{ github.event.inputs.priority != 'none' }}
     runs-on: windows-latest
-    steps:
-      - name: Note
-        run: echo "MARKER=-m 'physical or virtual'" | Out-File -FilePath $env:GITHUB_ENV -Append
-
-      - name: Run Registration Dataset Tests
-        run: pytest tests/ $MARKER --html=reports/data_registration_report.html --self-contained-html
-
-  # Step 2.1.1: Physical Dataset Test Execution
-  testCaseExecution_dataset_physical:
-    needs: [ testDataCheckAndCreation, test_execution, testCaseExecution_dataset_registration ]
-    if: ${{ github.event.inputs.selected_group == 'dataset_physical' || github.event.inputs.selected_group == 'dataset_registration' || github.event.inputs.selected_group == 'all' }}
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - flow: sql_to_azure
+            priority: P1
+          - flow: nas_to_azure
+            priority: P1
+          - flow: s3_to_azure
+            priority: P2
+          - flow: cybase_to_azure
+            priority: P2
+          - flow: HDFS_to_Azure
+            priority: P1
+          - flow: REST_API_to_Azure
+            priority: P2
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -95,45 +139,23 @@ jobs:
       - name: Install Dependencies
         run: pip install -r requirements.txt
 
-      - name: Set Marker for Physical Tests
-        run: echo "MARKER=-m 'physical'" >> $GITHUB_ENV
+      - name: Run Priority Test for ${{ matrix.flow }} - ${{ matrix.priority }}
+        if: ${{ github.event.inputs.priority == matrix.priority }}
+        run: |
+          pytest tests/${{ matrix.flow }}.py -m "${{ matrix.priority }}" \
+            --html=reports/${{ matrix.flow }}_${{ matrix.priority }}.html \
+            --self-contained-html
 
-      - name: Run Physical Dataset Tests
-        run: pytest tests/ $MARKER --html=reports/physical_report.html --self-contained-html
-
-      - name: Upload Physical Dataset Report
+      - name: Upload Report
         uses: actions/upload-artifact@v4
         with:
-          name: physical-report
-          path: reports/physical_report.html
+          name: ${{ matrix.flow }}_${{ matrix.priority }}_report
+          path: reports/${{ matrix.flow }}_${{ matrix.priority }}.html
 
-  # Step 2.1.2: Virtual Dataset Test Execution
-  testCaseExecution_dataset_virtual:
-    needs: [ testDataCheckAndCreation, test_execution, testCaseExecution_dataset_registration ]
-    if: ${{ github.event.inputs.selected_group == 'dataset_virtual' || github.event.inputs.selected_group == 'dataset_registration' || github.event.inputs.selected_group == 'all' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-
-      - name: Install Dependencies
-        run: pip install -r requirements.txt
-
-      - name: Set Marker for Virtual Tests
-        run: echo "MARKER=-m 'virtual'" >> $GITHUB_ENV
-
-      - name: Run Virtual Dataset Tests
-        run: pytest tests/ $MARKER --html=reports/virtual_report.html --self-contained-html
-
-      - name: Upload Virtual Dataset Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: virtual-report
-          path: reports/virtual_report.html
 
   # Step 3: Data Reconciliation
   dataReconciliation:
-    needs: test_execution
+    needs: workflow_execution
     runs-on: windows-latest
     steps:
       - name: Checkout Repository
