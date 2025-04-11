@@ -95,7 +95,7 @@ jobs:
 
   end_to_end_workflow_execution:
       needs: test_data_generation
-      if: ${{ github.event.inputs.flows != 'ALL' }}
+      if: ${{ github.event.inputs.flows != 'ALL' && github.event.inputs.flows != '' && github.event.inputs.flows != null}}
       runs-on: windows-latest
       steps:
         - name: Checkout Repository
@@ -108,7 +108,7 @@ jobs:
           run: pip install pytest pytest-html
 
         - name: Run selected end-to-end flow
-          run: pytest ${{ github.event.inputs.flows }}.py --html=reports/${{ github.event.inputs.flows }}_report.html --self-contained-html
+          run: pytest tests/${{ github.event.inputs.flows }}.py --html=reports/${{ github.event.inputs.flows }}_report.html --self-contained-html
 
   independent_component_execution:
       needs: test_data_generation
