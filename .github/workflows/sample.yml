@@ -176,7 +176,19 @@ jobs:
 
   # Step 3: Data Reconciliation
   dataReconciliation:
-    needs: workflow_execution
+    needs:
+      - workflow_execution
+      - end_to_end_workflow_execution
+      - independent_component_execution
+      - priority_test_case_execution
+    if: |
+      always() &&
+      (
+        needs.workflow_execution.result == 'success' ||
+        needs.end_to_end_workflow_execution.result == 'success' ||
+        needs.independent_component_execution.result == 'success' ||
+        needs.priority_test_case_execution.result == 'success'
+      )
     runs-on: windows-latest
     steps:
       - name: Checkout Repository
@@ -184,3 +196,4 @@ jobs:
 
       - name: Run Data Reconciliation
         run: echo "Tests completed. You can add real data reconciliation logic here."
+  
