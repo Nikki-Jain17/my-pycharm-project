@@ -129,7 +129,7 @@ jobs:
 
         - name: Run Component ${{ matrix.component }}
           if: ${{ github.event.inputs.component == matrix.component }}
-          run: pytest ${{ github.event.inputs.flows }}.py -m ${{ matrix.component }} --html=reports/${{ github.event.inputs.flows }}_${{ matrix.component }}.html --self-contained-html
+          run: pytest tests/test_${{ github.event.inputs.flows }}.py -m ${{ matrix.component }} --html=reports/${{ github.event.inputs.flows }}_${{ matrix.component }}.html --self-contained-html
 
   priority_test_case_execution:
     needs: test_data_generation
@@ -163,7 +163,7 @@ jobs:
       - name: Run Priority Test for ${{ matrix.flow }} - ${{ matrix.priority }}
         if: ${{ github.event.inputs.priority == matrix.priority }}
         run: |
-          pytest tests/${{ matrix.flow }}.py -m "${{ matrix.priority }}" \
+          pytest tests/test_${{ matrix.flow }}.py -m "${{ matrix.priority }}" \
             --html=reports/${{ matrix.flow }}_${{ matrix.priority }}.html \
             --self-contained-html
 
