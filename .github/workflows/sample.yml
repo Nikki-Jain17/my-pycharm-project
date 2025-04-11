@@ -118,6 +118,15 @@ jobs:
         matrix:
           component: [ register_dataset, register_schema, register_task, register_task_flows ]
       steps:
+        - name: Checkout Repository
+        - uses: actions/checkout@v3
+
+        - name: Install Dependencies
+        - run: pip install -r requirements.txt
+
+        - name: Install Pytest and Reporting Plugin
+        - run: pip install pytest pytest-html
+
         - name: Run Component ${{ matrix.component }}
           if: ${{ github.event.inputs.component == matrix.component }}
           run: pytest ${{ github.event.inputs.flows }}.py -m ${{ matrix.component }} --html=reports/${{ github.event.inputs.flows }}_${{ matrix.component }}.html --self-contained-html
@@ -147,6 +156,9 @@ jobs:
 
       - name: Install Dependencies
         run: pip install -r requirements.txt
+
+      - name: Install Pytest and Reporting Plugin
+      - run: pip install pytest pytest-html
 
       - name: Run Priority Test for ${{ matrix.flow }} - ${{ matrix.priority }}
         if: ${{ github.event.inputs.priority == matrix.priority }}
