@@ -98,6 +98,15 @@ jobs:
       if: ${{ github.event.inputs.flows != 'ALL' }}
       runs-on: windows-latest
       steps:
+        - name: Checkout Repository
+          uses: actions/checkout@v3
+
+        - name: Install Dependencies
+          run: pip install -r requirements.txt
+
+        - name: Install Pytest and Reporting Plugin
+          run: pip install pytest pytest-html
+
         - name: Run selected end-to-end flow
           run: pytest ${{ github.event.inputs.flows }}.py --html=reports/${{ github.event.inputs.flows }}_report.html --self-contained-html
 
@@ -126,7 +135,7 @@ jobs:
             priority: P1
           - flow: s3_to_azure
             priority: P2
-          - flow: cybase_to_azure
+          - flow: sybase_to_azure
             priority: P2
           - flow: HDFS_to_Azure
             priority: P1
