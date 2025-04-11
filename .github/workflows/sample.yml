@@ -26,7 +26,8 @@ on:
         type: choice
         options:
           - none
-          - register_dataset
+          - register_virtual_dataset
+          - register_physical_dataset
           - register_schema
           - register_task
           - register_task_flows
@@ -141,7 +142,7 @@ jobs:
       runs-on: windows-latest
       strategy:
         matrix:
-          component: [ register_dataset, register_schema, register_task, register_task_flows ]
+          component: [ register_virtual_dataset, register_physical_dataset,register_schema, register_task, register_task_flows ]
       steps:
         - name: Checkout Repository
           uses: actions/checkout@v3
