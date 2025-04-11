@@ -99,8 +99,14 @@ jobs:
       - name: Install Pytest and Reporting Plugin
         run: pip install pytest pytest-html
 
-      - name: Execute Default Flow
-        run: pytest test_sql_to_azure.py --html=reports/sql_to_azure_report.html --self-contained-html
+      - name: Run Pytest for ${{ matrix.flow }}
+        run: pytest tests/test_${{ matrix.flow }}.py --html=reports/${{ matrix.flow }}_report.html --self-contained-html
+
+      - name: Upload Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.flow }}_report
+          path: reports/${{ matrix.flow }}_report.html
 
   end_to_end_workflow_execution:
       needs: test_data_generation
