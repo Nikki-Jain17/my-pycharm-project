@@ -108,7 +108,7 @@ jobs:
           run: pip install pytest pytest-html
 
         - name: Run selected end-to-end flow
-          run: pytest tests/${{ github.event.inputs.flows }}.py --html=reports/${{ github.event.inputs.flows }}_report.html --self-contained-html
+          run: pytest tests/test_${{ github.event.inputs.flows }}.py --html=reports/${{ github.event.inputs.flows }}_report.html --self-contained-html
 
   independent_component_execution:
       needs: test_data_generation
