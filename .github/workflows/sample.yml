@@ -20,7 +20,7 @@ on:
           - REST_API_to_Azure
 
       component:
-        description: "Select component to execute"
+        description: "Select components to execute"
         required: false
         default: "none"
         type: choice
