@@ -91,14 +91,14 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout Repository
-      - uses: actions/checkout@v3
+        uses: actions/checkout@v3
 
       - name: Install Dependencies
-      - run: pip install -r requirements.txt
+        run: pip install -r requirements.txt
 
       - name: Install Pytest and Reporting Plugin
-      - run: pip install pytest pytest-html
-        
+        run: pip install pytest pytest-html
+
       - name: Execute Default Flow
         run: pytest test_sql_to_azure.py --html=reports/sql_to_azure_report.html --self-contained-html
 
