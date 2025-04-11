@@ -91,7 +91,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Execute Default Flow
-        run: pytest sql_to_azure.py --html=reports/sql_to_azure_report.html --self-contained-html
+        run: pytest test_sql_to_azure.py --html=reports/sql_to_azure_report.html --self-contained-html
 
   end_to_end_workflow_execution:
       needs: test_data_generation
@@ -196,4 +196,4 @@ jobs:
 
       - name: Run Data Reconciliation
         run: echo "Tests completed. You can add real data reconciliation logic here."
-  
+
