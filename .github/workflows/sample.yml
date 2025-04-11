@@ -85,10 +85,20 @@ jobs:
           path: metadata_driven/trade_data_with_line_numbers.csv
 
   # Step 2: Parent Job - Test Case Execution
+  
   workflow_execution:
     needs: test_data_generation
     if: ${{ github.event.inputs.flows == 'ALL' }}
     runs-on: windows-latest
+    strategy:
+      matrix:
+        flow:
+          - sql_to_azure
+          - nas_to_azure
+          - s3_to_azure
+          - sybase_to_azure
+          - HDFS_to_Azure
+          - REST_API_to_Azure
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
