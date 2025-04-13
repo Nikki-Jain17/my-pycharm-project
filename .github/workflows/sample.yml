@@ -231,6 +231,7 @@ jobs:
   # Step 4: Final Reporting
   reporting:
     needs: dataReconciliation
+    if: always()  # <-- This is crucial
     runs-on: windows-latest
     steps:
       - name: Checkout Repository
@@ -251,6 +252,9 @@ jobs:
         with:
           name: Final_Test_Reports
           path: downloaded-reports
+ 
+
+
 
 
 
