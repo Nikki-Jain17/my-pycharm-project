@@ -217,6 +217,31 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Run Data Reconciliation
+      - name: Run Data Reconciliatio
         run: echo "Tests completed. You can add real data reconciliation logic here."
+
+  # Step 4: Final Reporting
+  reporting:
+    needs: dataReconciliation
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Download All Uploaded Reports
+        uses: actions/download-artifact@v4
+        with:
+          path: downloaded-reports
+
+      - name: List Downloaded Reports
+        run: |
+          echo "Downloaded Reports:"
+          dir downloaded-reports /s
+
+      - name: Upload Final Report Folder
+        uses: actions/upload-artifact@v4
+        with:
+          name: Final_Test_Reports
+          path: downloaded-reports
+
 
