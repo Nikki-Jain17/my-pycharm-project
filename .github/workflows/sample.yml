@@ -89,7 +89,7 @@ jobs:
   
   workflow_execution:
     needs: test_data_generation
-    if: ${{ github.event.inputs.flows == 'ALL' }}
+    if: ${{ github.event.inputs.flows == 'ALL' && github.event.inputs.priority == 'none' && github.event.inputs.component == 'none' }}
     runs-on: windows-latest
     strategy:
       matrix:
@@ -175,7 +175,7 @@ jobs:
           - flow: HDFS_to_Azure
             priority: P1
           - flow: REST_API_to_Azure
-            priority: P2
+            priority: P1
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -188,10 +188,7 @@ jobs:
 
       - name: Run Priority Test for ${{ matrix.flow }} - ${{ matrix.priority }}
         if: ${{ github.event.inputs.priority == matrix.priority }}
-        run: |
-          pytest tests/test_${{ matrix.flow }}.py -m "${{ matrix.priority }}" \
-            --html=reports/${{ matrix.flow }}_${{ matrix.priority }}.html \
-            --self-contained-html
+        run: pytest tests/test_${{ matrix.flow }}.py -m "${{ matrix.priority }}" --html=reports/${{ matrix.flow }}_${{ matrix.priority }}.html --self-contained-html
 
       - name: Upload Report
         uses: actions/upload-artifact@v4
