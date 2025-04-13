@@ -157,6 +157,14 @@ jobs:
           if: ${{ github.event.inputs.component == matrix.component }}
           run: pytest tests/test_${{ github.event.inputs.flows }}.py -m ${{ matrix.component }} --html=reports/${{ github.event.inputs.flows }}_${{ matrix.component }}.html --self-contained-html
 
+        - name: Upload Component Report
+          if: ${{ github.event.inputs.component == matrix.component }}
+          uses: actions/upload-artifact@v4
+          with:
+            name: ${{ github.event.inputs.flows }}_${{ matrix.component }}_report
+            path: reports/${{ github.event.inputs.flows }}_${{ matrix.component }}.html
+
+
   priority_test_case_execution:
     needs: test_data_generation
     if: ${{ github.event.inputs.priority != 'none' }}
@@ -219,6 +227,30 @@ jobs:
 
       - name: Run Data Reconciliatio
         run: echo "Tests completed. You can add real data reconciliation logic here."
+
+  # Step 4: Final Reporting
+  reporting:
+    needs: dataReconciliation
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Download All Uploaded Reports
+        uses: actions/download-artifact@v4
+        with:
+          path: downloaded-reports
+
+      - name: List Downloaded Reports
+        run: |
+          echo "Downloaded Reports:"
+          dir downloaded-reports /s
+
+      - name: Upload Final Report Folder
+        uses: actions/upload-artifact@v4
+        with:
+          name: Final_Test_Reports
+          path: downloaded-reports
 
 
 
