@@ -94,7 +94,7 @@ jobs:
         if: env.createTestData == 'true'
         run: pip install -r requirements.txt
 
-      - name: Run Test Data Generation ( If Flag is True )
+      - name: Run Test Data Generation (If Flag is True)
         if: env.createTestData == 'true'
         working-directory: metadata_driven
         run: python TestDataGenerationViaMetadata.py
