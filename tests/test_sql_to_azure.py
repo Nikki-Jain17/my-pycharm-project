@@ -32,3 +32,9 @@ class TestSQLToAzure:
     def test_register_task_flows_sql(self):
         print("Running SQL to Azure - register_task_flows")
         assert True
+
+    @pytest.mark.sql_to_azure
+    @pytest.mark.data_reconciliation
+    def test_data_reconciliation(self):
+        print("Running dataReconciliation")
+        assert True

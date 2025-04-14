@@ -33,3 +33,9 @@ class TestSybaseToAzure:
     def test_register_task_flows_sql(self):
         print("Running Sybase to Azure - register_task_flows")
         assert True
+
+    @pytest.mark.sybase_to_azure
+    @pytest.mark.data_reconciliation
+    def test_data_reconciliation(self):
+        print("Running dataReconciliation")
+        assert True

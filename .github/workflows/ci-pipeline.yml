@@ -31,6 +31,7 @@ on:
           - register_schema
           - register_task
           - register_task_flows
+          - data_reconciliation
 
       priority:
         description: "Select priority level"
@@ -164,7 +165,7 @@ jobs:
       runs-on: windows-latest
       strategy:
         matrix:
-          component: [ register_virtual_dataset, register_physical_dataset,register_schema, register_task, register_task_flows ]
+          component: [ register_virtual_dataset, register_physical_dataset,register_schema, register_task, register_task_flows,data_reconciliation ]
       steps:
         - name: Checkout Repository
           uses: actions/checkout@v3
@@ -227,33 +228,21 @@ jobs:
           path: reports/${{ matrix.flow }}_${{ matrix.priority }}.html
 
 
-  # Step 4: Data Reconciliation
-  dataReconciliation:
+  # Step 4: Final Reporting
+  reporting:
     needs:
       - all_workflows_execution
       - end_to_end_workflow_execution
       - independent_component_execution
       - priority_test_case_execution
     if: |
-      always() &&
-      (
-        needs.workflow_execution.result == 'success' ||
-        needs.end_to_end_workflow_execution.result == 'success' ||
-        needs.independent_component_execution.result == 'success' ||
-        needs.priority_test_case_execution.result == 'success'
-      )
-    runs-on: windows-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-
-      - name: Run Data Reconciliatio
-        run: echo "Tests completed. You can add real data reconciliation logic here."
-
-  # Step 5: Final Reporting
-  reporting:
-    needs: dataReconciliation
-    if: github.event_name != 'push' && always()  # <-- This is crucial
+        github.event_name != 'push' && 
+        (
+          needs.all_workflows_execution.result == 'success' ||
+          needs.end_to_end_workflow_execution.result == 'success' ||
+          needs.independent_component_execution.result == 'success' ||
+          needs.priority_test_case_execution.result == 'success'
+        )
     runs-on: windows-latest
     steps:
       - name: Checkout Repository

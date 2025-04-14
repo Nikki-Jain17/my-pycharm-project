@@ -32,3 +32,9 @@ class TestRESTAPIToAzure:
     def test_register_task_flows_sql(self):
         print("Running REST API to Azure - register_task_flows")
         assert True
+
+    @pytest.mark.restapi_to_azure
+    @pytest.mark.data_reconciliation
+    def test_data_reconciliation(self):
+        print("Running dataReconciliation")
+        assert True
