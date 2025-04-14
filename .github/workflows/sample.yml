@@ -245,7 +245,7 @@ jobs:
       - name: List Downloaded Reports
         run: |
           echo "Downloaded Reports:"
-          dir downloaded-reports /s
+          Get-ChildItem -Path "downloaded-reports" -Recurse
 
       - name: Upload Final Report Folder
         uses: actions/upload-artifact@v4
