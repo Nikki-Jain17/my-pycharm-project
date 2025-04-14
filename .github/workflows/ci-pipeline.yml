@@ -230,7 +230,7 @@ jobs:
   # Step 4: Data Reconciliation
   dataReconciliation:
     needs:
-      - workflow_execution
+      - all_workflows_execution
       - end_to_end_workflow_execution
       - independent_component_execution
       - priority_test_case_execution
