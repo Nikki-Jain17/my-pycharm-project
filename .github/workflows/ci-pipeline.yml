@@ -56,7 +56,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.13'  # or your project’s Python version
+          python-version: '3.13'
 
       - name: Install dependencies
         run: pip install -r requirements.txt
@@ -109,7 +109,6 @@ jobs:
           path: metadata_driven/trade_data_with_line_numbers.csv
 
   # Step 3: Parent Job - Test Case Execution
-  
   all_workflows_execution:
     needs: test_data_generation
     if: ${{ github.event.inputs.flows == 'ALL' && github.event.inputs.priority == 'none' && github.event.inputs.component == 'none' }}
@@ -130,63 +129,68 @@ jobs:
       - name: Install Dependencies
         run: pip install -r requirements.txt
 
-      - name: Install Pytest and Reporting Plugin
-        run: pip install pytest pytest-html
+      - name: Install Allure Dependencies
+        run: pip install allure-pytest
 
-      - name: Run Pytest for ${{ matrix.flow }}
-        run: pytest tests/test_${{ matrix.flow }}.py --html=reports/${{ matrix.flow }}_report.html --self-contained-html
+      - name: Run Pytest for ${{ matrix.flow }} with Allure
+        run: pytest tests/test_${{ matrix.flow }}.py --alluredir=allure-results/${{ matrix.flow }}
 
-      - name: Upload Report
+      - name: Upload Allure Results
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.flow }}_report
-          path: reports/${{ matrix.flow }}_report.html
+          name: ${{ matrix.flow }}_allure_results
+          path: allure-results/${{ matrix.flow }}
 
   end_to_end_workflow_execution:
-      needs: test_data_generation
-      if: ${{ github.event.inputs.flows != 'ALL' && github.event.inputs.flows != '' && github.event.inputs.flows != null}}
-      runs-on: windows-latest
-      steps:
-        - name: Checkout Repository
-          uses: actions/checkout@v3
+    needs: test_data_generation
+    if: ${{ github.event.inputs.flows != 'ALL' && github.event.inputs.flows != '' && github.event.inputs.flows != null}}
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-        - name: Install Dependencies
-          run: pip install -r requirements.txt
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
 
-        - name: Install Pytest and Reporting Plugin
-          run: pip install pytest pytest-html
+      - name: Install Allure Dependencies
+        run: pip install allure-pytest
 
-        - name: Run selected end-to-end flow
-          run: pytest tests/test_${{ github.event.inputs.flows }}.py --html=reports/${{ github.event.inputs.flows }}_report.html --self-contained-html
+      - name: Run selected end-to-end flow
+        run: pytest tests/test_${{ github.event.inputs.flows }}.py --alluredir=allure-results/${{ github.event.inputs.flows }}
+
+      - name: Upload Allure Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.inputs.flows }}_allure_results
+          path: allure-results/${{ github.event.inputs.flows }}
 
   independent_component_execution:
-      needs: test_data_generation
-      if: ${{ github.event.inputs.component != 'none' && github.event.inputs.flows != 'ALL' }}
-      runs-on: windows-latest
-      strategy:
-        matrix:
-          component: [ register_virtual_dataset, register_physical_dataset,register_schema, register_task, register_task_flows,data_reconciliation ]
-      steps:
-        - name: Checkout Repository
-          uses: actions/checkout@v3
+    needs: test_data_generation
+    if: ${{ github.event.inputs.component != 'none' && github.event.inputs.flows != 'ALL' }}
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        component: [ register_virtual_dataset, register_physical_dataset,register_schema, register_task, register_task_flows,data_reconciliation ]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-        - name: Install Dependencies
-          run: pip install -r requirements.txt
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
 
-        - name: Install Pytest and Reporting Plugin
-          run: pip install pytest pytest-html
+      - name: Install Allure Dependencies
+        run: pip install allure-pytest
 
-        - name: Run Component ${{ matrix.component }}
-          if: ${{ github.event.inputs.component == matrix.component }}
-          run: pytest tests/test_${{ github.event.inputs.flows }}.py -m ${{ matrix.component }} --html=reports/${{ github.event.inputs.flows }}_${{ matrix.component }}.html --self-contained-html
+      - name: Run Component ${{ matrix.component }}
+        if: ${{ github.event.inputs.component == matrix.component }}
+        run: pytest tests/test_${{ github.event.inputs.flows }}.py -m ${{ matrix.component }} --alluredir=allure-results/${{ github.event.inputs.flows }}_${{ matrix.component }}
 
-        - name: Upload Component Report
-          if: ${{ github.event.inputs.component == matrix.component }}
-          uses: actions/upload-artifact@v4
-          with:
-            name: ${{ github.event.inputs.flows }}_${{ matrix.component }}_report
-            path: reports/${{ github.event.inputs.flows }}_${{ matrix.component }}.html
-
+      - name: Upload Allure Results
+        if: ${{ github.event.inputs.component == matrix.component }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.inputs.flows }}_${{ matrix.component }}_allure_results
+          path: allure-results/${{ github.event.inputs.flows }}_${{ matrix.component }}
 
   priority_test_case_execution:
     needs: test_data_generation
@@ -214,19 +218,18 @@ jobs:
       - name: Install Dependencies
         run: pip install -r requirements.txt
 
-      - name: Install Pytest and Reporting Plugin
-        run: pip install pytest pytest-html
+      - name: Install Allure Dependencies
+        run: pip install allure-pytest
 
       - name: Run Priority Test for ${{ matrix.flow }} - ${{ matrix.priority }}
         if: ${{ github.event.inputs.priority == matrix.priority }}
-        run: pytest tests/test_${{ matrix.flow }}.py -m "${{ matrix.priority }}" --html=reports/${{ matrix.flow }}_${{ matrix.priority }}.html --self-contained-html
+        run: pytest tests/test_${{ matrix.flow }}.py -m "${{ matrix.priority }}" --alluredir=allure-results/${{ matrix.flow }}_${{ matrix.priority }}
 
-      - name: Upload Report
+      - name: Upload Allure Results
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.flow }}_${{ matrix.priority }}_report
-          path: reports/${{ matrix.flow }}_${{ matrix.priority }}.html
-
+          name: ${{ matrix.flow }}_${{ matrix.priority }}_allure_results
+          path: allure-results/${{ matrix.flow }}_${{ matrix.priority }}
 
   # Step 4: Final Reporting
   reporting:
@@ -236,37 +239,43 @@ jobs:
       - independent_component_execution
       - priority_test_case_execution
     if: |
-        github.event_name != 'push' && 
-        (
-          needs.all_workflows_execution.result == 'success' ||
-          needs.end_to_end_workflow_execution.result == 'success' ||
-          needs.independent_component_execution.result == 'success' ||
-          needs.priority_test_case_execution.result == 'success'
-        )
+      github.event_name != 'push' && 
+      (
+        needs.all_workflows_execution.result == 'success' ||
+        needs.end_to_end_workflow_execution.result == 'success' ||
+        needs.independent_component_execution.result == 'success' ||
+        needs.priority_test_case_execution.result == 'success'
+      )
     runs-on: windows-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Download All Uploaded Reports
+      - name: Download All Allure Results
         uses: actions/download-artifact@v4
         with:
-          path: downloaded-reports
+          path: downloaded-allure-results
 
-      - name: List Downloaded Reports
+      - name: List Downloaded Allure Results
         run: |
-          echo "Downloaded Reports:"
-          Get-ChildItem -Path "downloaded-reports" -Recurse
+          echo "Downloaded Allure Results:"
+          Get-ChildItem -Path "downloaded-allure-results" -Recurse
 
-      - name: Upload Final Report Folder
+      - name: Install Allure CLI
+        run: choco install allure -y
+
+      - name: Merge Allure Result Files
+        run: |
+          mkdir merged-allure-results
+          Get-ChildItem -Path downloaded-allure-results -Recurse -Include *.json | ForEach-Object {
+            Copy-Item $_.FullName -Destination merged-allure-results
+          }
+
+      - name: Generate Allure Report
+        run: allure generate merged-allure-results --clean -o allure-report
+
+      - name: Upload Allure HTML Report
         uses: actions/upload-artifact@v4
         with:
-          name: Final_Test_Reports
-          path: downloaded-reports
-
-
-
-
-
-
-
+          name: Allure_HTML_Report
+          path: allure-report
