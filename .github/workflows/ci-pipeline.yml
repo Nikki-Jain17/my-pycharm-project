@@ -240,12 +240,14 @@ jobs:
       - priority_test_case_execution
     if: |
       always() &&
+      github.event_name != 'push' && 
       (
-        needs.end_to_end_workflow_execution.result == 'success' ||
         needs.all_workflows_execution.result == 'success' ||
+        needs.end_to_end_workflow_execution.result == 'success' ||
         needs.independent_component_execution.result == 'success' ||
         needs.priority_test_case_execution.result == 'success'
       )
+    
     runs-on: windows-latest
     steps:
       - name: Checkout Repository
