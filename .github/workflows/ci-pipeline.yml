@@ -239,10 +239,10 @@ jobs:
       - independent_component_execution
       - priority_test_case_execution
     if: |
-      github.event_name != 'push' && 
+      always() &&
       (
-        needs.all_workflows_execution.result == 'success' ||
         needs.end_to_end_workflow_execution.result == 'success' ||
+        needs.all_workflows_execution.result == 'success' ||
         needs.independent_component_execution.result == 'success' ||
         needs.priority_test_case_execution.result == 'success'
       )
