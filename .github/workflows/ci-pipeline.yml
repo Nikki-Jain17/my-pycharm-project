@@ -261,8 +261,11 @@ jobs:
           echo "Downloaded Allure Results:"
           Get-ChildItem -Path "downloaded-allure-results" -Recurse
 
-      - name: Install Allure CLI
-        run: choco install allure -y
+      - name: Download Allure CLI (Windows)
+        run: |
+          curl -L -o allure.zip https://github.com/allure-framework/allure2/releases/download/2.25.0/allure-2.25.0.zip
+          powershell -Command "Expand-Archive -Path 'allure.zip' -DestinationPath '.'"
+          echo "${{ github.workspace }}\\allure-2.25.0\\bin" >> $env:GITHUB_PATH
 
       - name: Merge Allure Result Files
         run: |
@@ -279,3 +282,11 @@ jobs:
         with:
           name: Allure_HTML_Report
           path: allure-report
+
+      - name: Deploy Allure Report to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-report
+
