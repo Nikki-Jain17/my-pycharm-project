@@ -1,0 +1,33 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cron-run-tests
+spec:
+  schedule: "0 1 * * *"  # 🔁 Adjust as needed: this example runs daily at 1:00 AM
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: e2e-tests
+              image: nikkijain17/my-e2e-kub-tests:latest  # 🔁 Replace with your Docker image
+              imagePullPolicy: Always
+              command: ["python3", "run_tests.py"]
+              args:
+                - "--mode=COMPONENT"
+                - "--flow=sql_to_azure"
+                - "--component=register_schema"
+
+
+              volumeMounts:
+                - name: allure-results
+                  mountPath: /allure-results  # Path where Allure will store results
+
+              env:
+                - name: PYTHONUNBUFFERED
+                  value: "1"
+          restartPolicy: Never
+          volumes:
+            - name: allure-results
+              emptyDir: { }  # This creates an ephemeral volume to store Allure results
+      backoffLimit: 1
