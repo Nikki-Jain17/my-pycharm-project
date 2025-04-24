@@ -281,11 +281,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
           SNS_TOPIC_ARN: ${{ secrets.SNS_TOPIC_ARN }}
-          run: |
-            pip install boto3
-            python -c "import boto3, os; \
-            sns = boto3.client('sns', region_name=os.environ['AWS_REGION']); \
-            message = 'Test execution completed. Allure report is generated.'; \
-            sns.publish(TopicArn=os.environ['SNS_TOPIC_ARN'], Message=message, Subject='Test Report Notification')"
+        run: |
+          pip install boto3
+          python -c "import boto3, os; \sns = boto3.client('sns', region_name=os.environ['AWS_REGION']); \message = 'Test execution completed. Allure report is generated.'; \sns.publish(TopicArn=os.environ['SNS_TOPIC_ARN'], Message=message, Subject='Test Report Notification')"
 
 
