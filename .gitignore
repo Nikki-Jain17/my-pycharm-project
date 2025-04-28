@@ -4,4 +4,9 @@ venv/
 # Ignore all CSV files
 *.csv
 echo "reports/" >> .gitignore
-
+.env
+allure-results/
+config.json
+crypto_util.py
+encrypt_secret_util.py
+verify_config.py
