@@ -41,7 +41,8 @@ def send_notification():
         raise Exception("Missing one or more environment variables needed for decryption.")
 
     # Step 1: Decrypt the secrets
-    encryption_key = load_key_from_config()
+    #encryption_key = load_key_from_config()
+    encryption_key = os.getenv('ENCRYPTION_KEY')
 
     try:
         decrypted_access_key = decrypt_value(encrypted_access_key, encryption_key)

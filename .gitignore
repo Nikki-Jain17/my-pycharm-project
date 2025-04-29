@@ -9,3 +9,4 @@ allure-results/
 crypto_util.py
 encrypt_secret_util.py
 verify_config.py
+config.json
