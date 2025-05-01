@@ -151,6 +151,11 @@ jobs:
     if: ${{ github.event.inputs.component != 'none' && github.event.inputs.flows != 'ALL' }}
     runs-on: windows-latest
 
+    strategy:
+      matrix:
+        flow: ${{ fromJSON(format('["{0}"]', github.event.inputs.flows)) }}
+        component:  ${{ fromJSON(format('["{0}"]', github.event.inputs.component)) }}
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
