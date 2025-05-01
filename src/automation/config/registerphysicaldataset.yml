@@ -1,0 +1,7 @@
+pagelocator: "../src/automation/locators/registerphysicaldataset.json"
+elements:
+  - name: "DataRegistration"
+    elementType: "button"
+
+  - name: "PhysicalDataset"
+    elementType: "button"

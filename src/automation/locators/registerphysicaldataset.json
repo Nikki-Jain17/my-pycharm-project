@@ -1,0 +1,16 @@
+{
+  "name": "RegisterPhysicalDataset",
+  "elements": [
+    {
+      "name": "DataRegistration",
+      "xpath": "",
+      "type": "button"
+    },
+    {
+      "name": "PhysicalDataset",
+      "xpath": "",
+      "type": "button"
+    }
+
+  ]
+}

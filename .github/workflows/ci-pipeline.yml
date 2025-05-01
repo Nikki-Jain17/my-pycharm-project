@@ -147,9 +147,7 @@ jobs:
     needs: test_data_generation
     if: ${{ github.event.inputs.component != 'none' && github.event.inputs.flows != 'ALL' }}
     runs-on: windows-latest
-    strategy:
-      matrix:
-        component: [ register_virtual_dataset, register_physical_dataset,register_schema, register_task, register_task_flows,data_reconciliation ]
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -162,7 +160,12 @@ jobs:
 
       - name: Run Component ${{ matrix.component }}
         if: ${{ github.event.inputs.component == matrix.component }}
-        run: pytest tests/test_${{ github.event.inputs.flows }}.py -m ${{ matrix.component }} --alluredir=allure-results/${{ github.event.inputs.flows }}_${{ matrix.component }}
+        run: |
+          pytest testing/test_${{ github.event.inputs.flows }}.py \
+            --flow=${{ github.event.inputs.flows }} \
+            --component=${{ github.event.inputs.component }} \
+            -m ${{ matrix.component }} \
+            --alluredir=allure-results/${{ github.event.inputs.flows }}_${{ matrix.component }}
 
       - name: Upload Allure Results
         if: ${{ github.event.inputs.component == matrix.component }}

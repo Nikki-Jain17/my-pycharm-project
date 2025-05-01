@@ -1,0 +1,6 @@
+url: ""
+register_physical_dataset:
+  enabled: true
+  execution_flow:
+    - name: "RegisterPhysicalDataset"
+      steps_config: "../src/automation/config/registerphysicaldataset.yml"
