@@ -123,10 +123,11 @@ jobs:
   end_to_end_workflow_execution:
     needs: test_data_generation
     if: ${{ github.event.inputs.flows != 'ALL' && github.event.inputs.component == 'none' && github.event.inputs.flows != '' && github.event.inputs.flows != null }}
+    runs-on: windows-latest
     strategy:
       matrix:
         flow: [ ${ { github.event.inputs.flows } } ]
-    runs-on: windows-latest
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
