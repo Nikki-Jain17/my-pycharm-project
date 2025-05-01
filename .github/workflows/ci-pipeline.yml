@@ -159,12 +159,12 @@ jobs:
         run: pip install allure-pytest
 
       - name: Run Component ${{ matrix.component }}
-        if: ${{ github.event.inputs.component == matrix.component }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.flows != '' && github.event.inputs.component == matrix.component }}
         run: |
-          pytest testing/test_${{ github.event.inputs.flows }}.py \
-            --flow=${{ github.event.inputs.flows }} \
-            --component=${{ github.event.inputs.component }} \
-            -m ${{ matrix.component }} \
+          pytest testing/test_${{ github.event.inputs.flows }}.py `
+            --flow=${{ github.event.inputs.flows }} `
+            --component=${{ github.event.inputs.component }} `
+            -m ${{ matrix.component }} `
             --alluredir=allure-results/${{ github.event.inputs.flows }}_${{ matrix.component }}
 
       - name: Upload Allure Results
