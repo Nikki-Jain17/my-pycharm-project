@@ -3,14 +3,6 @@ import pytest
 from config_loader import load_config
 
 
-@pytest.fixture
-def flow(request):
-    return request.config.getoption("--flow")
-
-@pytest.fixture
-def component(request):
-    return request.config.getoption("--component")
-
 @allure.suite("SQL to Azure Suite")
 @allure.feature("SQL to Azure Workflow")
 @pytest.mark.P1
