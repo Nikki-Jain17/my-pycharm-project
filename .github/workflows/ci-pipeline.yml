@@ -122,7 +122,7 @@ jobs:
 
   end_to_end_workflow_execution:
     needs: test_data_generation
-    if: ${{ github.event.inputs.flows != 'ALL' && github.event.inputs.component == 'none' && github.event.inputs.flows != '' && github.event.inputs.flows != null}}
+    if: ${{ github.event.inputs.flows != 'ALL' && github.event.inputs.flows != '' && github.event.inputs.flows != null}}
     strategy:
       matrix:
         flow: ${{ fromJSON(format('["{0}"]', github.event.inputs.flows)) }}
