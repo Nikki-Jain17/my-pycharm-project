@@ -127,7 +127,6 @@ jobs:
       matrix:
         flow: [ ${ { github.event.inputs.flows } } ]
     runs-on: windows-latest
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
