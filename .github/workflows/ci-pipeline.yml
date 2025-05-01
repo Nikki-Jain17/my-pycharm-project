@@ -122,10 +122,10 @@ jobs:
 
   end_to_end_workflow_execution:
     needs: test_data_generation
-    if: ${{ github.event.inputs.flows != 'ALL' && github.event.inputs.flows != '' && github.event.inputs.flows != null}}
+    if: ${{ github.event.inputs.flow != 'ALL' && github.event.inputs.flow != '' && github.event.inputs.flow != null}}
     strategy:
       matrix:
-        flow: ${{ fromJSON(format('["{0}"]', github.event.inputs.flows)) }}
+        flow: ${{ fromJSON(format('["{0}"]', github.event.inputs.flow)) }}
     runs-on: windows-latest
     steps:
       - name: Checkout Repository
@@ -138,22 +138,22 @@ jobs:
         run: pip install allure-pytest
 
       - name: Run selected end-to-end flow
-        run: pytest testing/test_${{ github.event.inputs.flows }}.py --alluredir=allure-results/${{ github.event.inputs.flows }}
+        run: pytest testing/test_${{ github.event.inputs.flow }}.py --alluredir=allure-results/${{ github.event.inputs.flow }}
 
       - name: Upload Allure Results
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.event.inputs.flows }}_allure_results
-          path: allure-results/${{ github.event.inputs.flows }}
+          name: ${{ github.event.inputs.flow }}_allure_results
+          path: allure-results/${{ github.event.inputs.flow }}
 
   independent_component_execution:
     needs: test_data_generation
-    if: ${{ github.event.inputs.component != 'none' && github.event.inputs.flows != 'ALL' }}
+    if: ${{ github.event.inputs.component != 'none' && github.event.inputs.flow != 'ALL' }}
     runs-on: windows-latest
 
     strategy:
       matrix:
-        flow: ${{ fromJSON(format('["{0}"]', github.event.inputs.flows)) }}
+        flow: ${{ fromJSON(format('["{0}"]', github.event.inputs.flow)) }}
         component:  ${{ fromJSON(format('["{0}"]', github.event.inputs.component)) }}
 
     steps:
