@@ -5,7 +5,7 @@ on:
   pull_request:
   workflow_dispatch:
     inputs:
-      flows:
+      flow:
         description: "Select end-to-end flow"
         required: true
         default: "ALL"
@@ -169,17 +169,17 @@ jobs:
       - name: Run Component ${{ matrix.component }}
         if: ${{ github.event_name == 'workflow_dispatch' && matrix.flow != '' && matrix.component != '' }}
         run: |
-          pytest testing/test_${{ matrix.flow }}.py \
-          --flow=${{ matrix.flow }} \
-          --component=${{ matrix.component }} \
-          --alluredir=allure-results/${{ matrix.flow }}_${{ matrix.component }}
+          pytest testing/test_${{ matrix.flow }}.py `
+            --flow=${{ matrix.flow }} `
+            --component=${{ matrix.component }} `
+            --alluredir=allure-results/${{ matrix.flow }}_${{ matrix.component }}
 
       - name: Upload Allure Results
-        if: ${{ github.event.inputs.component == matrix.component }}
+        if: ${{ matrix.component != '' }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.event.inputs.flows }}_${{ matrix.component }}_allure_results
-          path: allure-results/${{ github.event.inputs.flows }}_${{ matrix.component }}
+          name: ${{ matrix.flow }}_${{ matrix.component }}_allure_results
+          path: allure-results/${{ matrix.flow }}_${{ matrix.component }}
 
   priority_test_case_execution:
     needs: test_data_generation
