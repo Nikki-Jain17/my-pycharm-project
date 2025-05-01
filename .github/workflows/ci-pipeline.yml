@@ -125,7 +125,7 @@ jobs:
     if: ${{ github.event.inputs.flows != 'ALL' && github.event.inputs.component == 'none' && github.event.inputs.flows != '' && github.event.inputs.flows != null}}
     strategy:
       matrix:
-        flow: [${{ github.event.inputs.flows }}]
+        flow: ${{ fromJSON(format('["{0}"]', github.event.inputs.flows)) }}
     runs-on: windows-latest
     steps:
       - name: Checkout Repository
