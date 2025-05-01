@@ -2,9 +2,6 @@ import allure
 import pytest
 from config_loader import load_config
 
-def pytest_addoption(parser):
-    parser.addoption("--flow", action="store", default="sql_to_azure", help="Name of the flow to run")
-    parser.addoption("--component", action="store", default="none", help="Component to execute")
 
 @pytest.fixture
 def flow(request):

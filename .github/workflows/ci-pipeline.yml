@@ -112,7 +112,7 @@ jobs:
         run: pip install allure-pytest
 
       - name: Run Pytest for ${{ matrix.flow }} with Allure
-        run: pytest tests/test_${{ matrix.flow }}.py --alluredir=allure-results/${{ matrix.flow }}
+        run: pytest testing/test_${{ matrix.flow }}.py --alluredir=allure-results/${{ matrix.flow }}
 
       - name: Upload Allure Results
         uses: actions/upload-artifact@v4
@@ -208,7 +208,7 @@ jobs:
 
       - name: Run Priority Test for ${{ matrix.flow }} - ${{ matrix.priority }}
         if: ${{ github.event.inputs.priority == matrix.priority }}
-        run: pytest tests/test_${{ matrix.flow }}.py -m "${{ matrix.priority }}" --alluredir=allure-results/${{ matrix.flow }}_${{ matrix.priority }}
+        run: pytest testing/test_${{ matrix.flow }}.py -m "${{ matrix.priority }}" --alluredir=allure-results/${{ matrix.flow }}_${{ matrix.priority }}
 
       - name: Upload Allure Results
         uses: actions/upload-artifact@v4
