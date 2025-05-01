@@ -138,8 +138,11 @@ jobs:
         run: pip install allure-pytest
 
       - name: Run selected end-to-end flow
-        run: pytest testing/test_${{ github.event.inputs.flow }}.py --alluredir=allure-results/${{ github.event.inputs.flow }}
-
+        run: |
+          pytest testing/test_${{ github.event.inputs.flow }}.py `
+            --flow=${{ github.event.inputs.flow }} `
+            --alluredir=allure-results/${{ github.event.inputs.flow }}
+          
       - name: Upload Allure Results
         uses: actions/upload-artifact@v4
         with:
