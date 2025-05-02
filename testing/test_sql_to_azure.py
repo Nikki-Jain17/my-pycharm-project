@@ -16,7 +16,7 @@ def test_sql_to_azure(flow, component):
 
     e2e_flow_config = load_config(f'{flow}/e2eflow.yml')
 
-    if component is None or component.tolower() == "none":
+    if component is None or component == "none":
         # End-to-end mode: Run **all components** one by one
         for comp in e2e_flow_config:
             with allure.step(f"Running full E2E flow for component: {comp}"):
