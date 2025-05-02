@@ -1,0 +1,7 @@
+pagelocator: "../src/automation/locators/registerschema.json"
+elements:
+  - name: "SchemaRegistration"
+    elementType: "button"
+
+  - name: "SchemaDataset"
+    elementType: "button"

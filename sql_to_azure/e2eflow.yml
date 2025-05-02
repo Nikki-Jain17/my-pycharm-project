@@ -4,3 +4,9 @@ register_physical_dataset:
   execution_flow:
     - name: "RegisterPhysicalDataset"
       steps_config: "../src/automation/config/registerphysicaldataset.yml"
+
+register_schema:
+  enabled: true
+  execution_flow:
+    - name: "RegisterSchema"
+      steps_config: "../src/automation/config/registerschema.yml"

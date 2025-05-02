@@ -1,0 +1,16 @@
+{
+  "name": "RegisterSchema",
+  "elements": [
+    {
+      "name": "SchemaRegistration",
+      "xpath": "",
+      "type": "button"
+    },
+    {
+      "name": "SchemaDataset",
+      "xpath": "",
+      "type": "button"
+    }
+
+  ]
+}
