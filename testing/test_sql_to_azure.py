@@ -23,9 +23,12 @@ def test_sql_to_azure(flow, component):
                 print(f"Executing full flow logic for component: {comp}")
                 # you can call your function to run component here
     else:
-        # Single component mode
         if component not in e2e_flow_config:
             pytest.fail(f"Component '{component}' not found in {flow}/e2eflow.yml")
 
-        # Execute for the selected component
-        print(f"Component '{component}' executed successfully for {flow}")
+        if e2e_flow_config[component]["enabled"]:
+            with allure.step(f"{component} execution successful for {flow}"):
+                print(f"{component} execution successful for {flow}")
+        else:
+            with allure.step(f"{component} execution skipped for {flow}"):
+                print(f"{component} execution skipped for {flow}")
