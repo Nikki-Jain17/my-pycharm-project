@@ -141,6 +141,7 @@ jobs:
         run: |
           pytest testing/test_${{ github.event.inputs.flow }}.py `
             --flow=${{ github.event.inputs.flow }} `
+            --component=${{ github.event.inputs.component }} `
             --alluredir=allure-results/${{ github.event.inputs.flow }}
           
       - name: Upload Allure Results
