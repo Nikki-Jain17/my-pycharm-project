@@ -176,7 +176,10 @@ jobs:
 
       - name: Run Component ${{ matrix.component }}
         if: ${{ github.event_name == 'workflow_dispatch' && matrix.flow != '' && matrix.component != '' }}
-        run: |
+        run:  |
+          echo "Flow selected: ${{ matrix.flow }}"
+          echo "Component selected: ${{ matrix.component }}"
+          
           pytest testing/test_${{ matrix.flow }}.py `
             --flow=${{ matrix.flow }} `
             --component=${{ matrix.component }} `

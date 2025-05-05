@@ -27,6 +27,8 @@ def test_sql_to_azure(flow, component):
             pytest.fail(f"Component '{component}' not found in {flow}/e2eflow.yml")
 
         if e2e_flow_config[component]["enabled"]:
+            print(f"Exact Running component: {component}")
+
             with allure.step(f"{component} execution successful for {flow}"):
                 print(f"{component} execution successful for {flow}")
         else:
