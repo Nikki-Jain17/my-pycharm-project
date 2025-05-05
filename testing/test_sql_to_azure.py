@@ -6,7 +6,10 @@ from config_loader import load_config  # wherever your load_config is
 @allure.suite("SQL to Azure Suite")
 @allure.feature("SQL to Azure Workflow")
 @pytest.mark.P1
-def test_sql_to_azure(flow, component):
+def test_sql_to_azure(request):
+
+    flow = request.config.getoption("--flow")
+    component = request.config.getoption("--component")
 
     with allure.step(f"Running flow: {flow}"):
         print(f"Running flow: {flow}")
