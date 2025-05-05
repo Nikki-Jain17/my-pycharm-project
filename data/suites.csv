@@ -1,2 +1,2 @@
 "Status","Start Time","Stop Time","Duration in ms","Parent Suite","Suite","Sub Suite","Test Class","Test Method","Name","Description"
-"passed","Mon May 05 07:34:53 UTC 2025","Mon May 05 07:34:53 UTC 2025","0","testing","SQL to Azure Suite","","","","test_sql_to_azure",""
+"passed","Mon May 05 08:34:27 UTC 2025","Mon May 05 08:34:27 UTC 2025","0","testing","SQL to Azure Suite","","","","test_sql_to_azure",""
