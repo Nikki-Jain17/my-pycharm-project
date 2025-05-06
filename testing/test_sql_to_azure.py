@@ -7,7 +7,6 @@ from config_loader import load_config  # wherever your load_config is
 @allure.feature("SQL to Azure Workflow")
 @pytest.mark.P1
 def test_sql_to_azure(flow, component):
-
     with allure.step(f"Running flow: {flow}"):
         print(f"Running flow: {flow}")
 
@@ -16,19 +15,19 @@ def test_sql_to_azure(flow, component):
 
     e2e_flow_config = load_config(f'{flow}/e2eflow.yml')
 
-    if component is None or component == "none":
-        # End-to-end mode: Run **all components** one by one
-        for comp in e2e_flow_config:
-            with allure.step(f"Running full E2E flow for component: {comp}"):
-                print(f"Executing full flow logic for component: {comp}")
-                # you can call your function to run component here
-    else:
-        if component not in e2e_flow_config:
-            pytest.fail(f"Component '{component}' not found in {flow}/e2eflow.yml")
-
-        if e2e_flow_config[component]["enabled"]:
-            with allure.step(f"{component} execution successful for {flow}"):
-                print(f"{component} execution successful for {flow}")
+    with allure.step("Validating component in config"):
+        if component is None or component == "none":
+            for comp in e2e_flow_config:
+                with allure.step(f"Running full E2E flow for component: {comp}"):
+                    print(f"Executing full flow logic for component: {comp}")
         else:
-            with allure.step(f"{component} execution skipped for {flow}"):
-                print(f"{component} execution skipped for {flow}")
+            if component not in e2e_flow_config:
+                allure.attach(f"Component '{component}' not found", name="Failure Reason", attachment_type=allure.attachment_type.TEXT)
+                pytest.fail(f"Component '{component}' not found in {flow}/e2eflow.yml")
+
+            if e2e_flow_config[component]["enabled"]:
+                with allure.step(f"{component} execution successful for {flow}"):
+                    print(f"{component} execution successful for {flow}")
+            else:
+                with allure.step(f"{component} execution skipped for {flow}"):
+                    print(f"{component} execution skipped for {flow}")
