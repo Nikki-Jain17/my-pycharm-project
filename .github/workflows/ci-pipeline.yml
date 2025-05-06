@@ -276,7 +276,7 @@ jobs:
             Write-Host "No downloaded allure results found."
             exit 1
           }
-
+          
       - name: Check if any Allure results exist
         run: |
           if ((Get-ChildItem merged-allure-results | Measure-Object).Count -eq 0) {
