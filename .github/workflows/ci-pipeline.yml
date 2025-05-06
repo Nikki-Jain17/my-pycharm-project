@@ -274,7 +274,15 @@ jobs:
             }
           } else {
             Write-Host "No downloaded allure results found."
+            exit 1
           }
+
+      - name: Check if any Allure results exist
+        run: |
+          if ((Get-ChildItem merged-allure-results | Measure-Object).Count -eq 0) {
+            Write-Host "No Allure result files found after merging. Failing pipeline."
+            exit 1
+        }
 
       - name: Generate Allure Report
         run: allure generate merged-allure-results --clean -o allure-report
