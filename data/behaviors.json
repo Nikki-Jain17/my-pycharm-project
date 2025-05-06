@@ -1,1 +1,1 @@
-{"uid":"b1a8273437954620fa374b796ffaacdd","name":"behaviors","children":[{"name":"SQL to Azure Workflow","children":[{"name":"test_sql_to_azure","uid":"3cbcf31d27af666c","parentUid":"fc82052741a47cdd668b67848589609f","status":"passed","time":{"start":1746435834898,"stop":1746435834898,"duration":0},"flaky":false,"newFailed":false,"newPassed":false,"newBroken":false,"retriesCount":0,"retriesStatusChange":false,"parameters":[],"tags":["P1"]}],"uid":"fc82052741a47cdd668b67848589609f"}]}
+{"uid":"b1a8273437954620fa374b796ffaacdd","name":"behaviors","children":[]}
