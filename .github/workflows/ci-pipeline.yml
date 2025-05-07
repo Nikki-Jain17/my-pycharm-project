@@ -258,8 +258,8 @@ jobs:
 
       - name: List Downloaded Allure Results
         run: |
-          echo "Downloaded Allure Results:"
-          Get-ChildItem -Path "downloaded-allure-results" -Recurse
+          echo "Showing all files under downloaded-allure-results recursively:"
+          Get-ChildItem -Path downloaded-allure-results -Recurse | Format-List FullName
 
       - name: Download Allure CLI (Windows)
         run: |
