@@ -1,11 +1,17 @@
 import pytest
 import allure
 import logging
+import io
 
 # --------------- Setup basic logger ---------------- #
+log_stream = io.StringIO()  # NEW: Create memory stream
+
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s"
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.StreamHandler(log_stream)  # NEW: Log into memory
+    ]
 )
 logger = logging.getLogger("pytest-logger")
 
@@ -36,17 +42,29 @@ def pytest_runtest_makereport(item, call):
         # Fetching flow and component safely
         flow_value = item.funcargs.get('flow', 'Unknown Flow')
         component_value = item.funcargs.get('component', 'Unknown Component')
-        exception_info = str(call.excinfo.value)
 
-        with allure.step(f"Failure in test: {item.name}"):
-            allure.attach(
-                f"Flow: {flow_value}\nComponent: {component_value}\nException: {exception_info}",
-                name="Failure Details",
-                attachment_type=allure.attachment_type.TEXT
-            )
+        # Attach captured logs
+        log_contents = log_stream.getvalue()
+        if log_contents:
+            allure.attach(log_contents, name="Captured Logs", attachment_type=allure.attachment_type.TEXT)
+
+        # Only on failure, attach exception info
+        if report.failed:
+            exception_info = str(call.excinfo.value)
+
+            with allure.step(f"Failure in test: {item.name}"):
+                allure.attach(
+                    f"Flow: {flow_value}\nComponent: {component_value}\nException: {exception_info}",
+                    name="Failure Details",
+                    attachment_type=allure.attachment_type.TEXT
+                )
 
             # Log the error properly
             logger.error(f"Test '{item.name}' failed")
             logger.error(f"Flow: {flow_value}")
             logger.error(f"Component: {component_value}")
             logger.error(f"Exception: {exception_info}")
+
+        # Clear the log_stream for next test
+        log_stream.truncate(0)
+        log_stream.seek(0)
