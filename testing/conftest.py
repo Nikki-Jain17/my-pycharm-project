@@ -1,11 +1,20 @@
 import pytest
 import allure
+import logging
 
+# --------------- Setup basic logger ---------------- #
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger("pytest-logger")
+
+
+# --------------- Pytest CLI Options ---------------- #
 def pytest_addoption(parser):
     parser.addoption("--flow", action="store", default=None, help="Flow name")
     parser.addoption("--component", action="store", default=None, help="Component name")
 
-import pytest
 
 @pytest.fixture
 def flow(request):
@@ -27,7 +36,6 @@ def pytest_runtest_makereport(item, call):
         # Fetching flow and component safely
         flow_value = item.funcargs.get('flow', 'Unknown Flow')
         component_value = item.funcargs.get('component', 'Unknown Component')
-
         exception_info = str(call.excinfo.value)
 
         with allure.step(f"Failure in test: {item.name}"):
@@ -37,7 +45,8 @@ def pytest_runtest_makereport(item, call):
                 attachment_type=allure.attachment_type.TEXT
             )
 
-        print(f"[ERROR] Test '{item.name}' failed")
-        print(f"Flow: {flow_value}")
-        print(f"Component: {component_value}")
-        print(f"Exception: {exception_info}")
+            # Log the error properly
+            logger.error(f"Test '{item.name}' failed")
+            logger.error(f"Flow: {flow_value}")
+            logger.error(f"Component: {component_value}")
+            logger.error(f"Exception: {exception_info}")
