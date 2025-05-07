@@ -1,1 +1,1 @@
-{}
+{"f0eb8b73246d88b28654bcc0b7dd1c3b":{"statistic":{"failed":1,"broken":0,"skipped":0,"passed":0,"unknown":0,"total":1},"items":[{"uid":"9675024e74b61ceb","status":"failed","statusDetails":"AssertionError: Math is wrong!\nassert (2 + 2) == 5","time":{"start":1746639370120,"stop":1746639370120,"duration":0}}]}}
