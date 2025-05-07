@@ -32,39 +32,39 @@ def component(request):
 
 
 # --------------- code for logging exceptions ---------------- #
-
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
     outcome = yield
     report = outcome.get_result()
 
     if report.when == "call" and report.failed:
-        # Fetching flow and component safely
+        # Fetch flow and component
         flow_value = item.funcargs.get('flow', 'Unknown Flow')
         component_value = item.funcargs.get('component', 'Unknown Component')
+        exception_info = str(call.excinfo.value)
 
-        # Attach captured logs
-        log_contents = log_stream.getvalue()
-        if log_contents:
-            allure.attach(log_contents, name="Captured Logs", attachment_type=allure.attachment_type.TEXT)
+        # Create a real log file
+        log_content = (
+            f"Test: {item.name}\n"
+            f"Flow: {flow_value}\n"
+            f"Component: {component_value}\n"
+            f"Exception: {exception_info}\n"
+        )
 
-        # Only on failure, attach exception info
-        if report.failed:
-            exception_info = str(call.excinfo.value)
+        log_filename = f"{item.name}_error_log.txt"
+        log_filepath = os.path.join("allure-results", log_filename)  # Save it inside allure-results
 
-            with allure.step(f"Failure in test: {item.name}"):
-                allure.attach(
-                    f"Flow: {flow_value}\nComponent: {component_value}\nException: {exception_info}",
-                    name="Failure Details",
-                    attachment_type=allure.attachment_type.TEXT
-                )
+        os.makedirs(os.path.dirname(log_filepath), exist_ok=True)
+        with open(log_filepath, "w") as f:
+            f.write(log_content)
 
-            # Log the error properly
-            logger.error(f"Test '{item.name}' failed")
-            logger.error(f"Flow: {flow_value}")
-            logger.error(f"Component: {component_value}")
-            logger.error(f"Exception: {exception_info}")
+        # Attach the real file to Allure
+        with open(log_filepath, "rb") as f:
+            allure.attach(
+                f.read(),
+                name="Failure_Log_File",
+                attachment_type=allure.attachment_type.TEXT
+            )
 
-        # Clear the log_stream for next test
-        log_stream.truncate(0)
-        log_stream.seek(0)
+        # Also log in console
+        logger.error(log_content)
