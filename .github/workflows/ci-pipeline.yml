@@ -112,13 +112,13 @@ jobs:
         run: pip install allure-pytest
 
       - name: Run Pytest for ${{ matrix.flow }} with Allure
-        run: pytest testing/test_${{ matrix.flow }}.py --alluredir=allure-results/${{ matrix.flow }}
+        run: pytest testing/test_${{ matrix.flow }}.py --alluredir=allure-results
 
       - name: Upload Allure Results
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.flow }}_allure_results
-          path: allure-results/${{ matrix.flow }}
+          name: allure-results-${{ matrix.flow }}
+          path: allure-results
 
   end_to_end_workflow_execution:
     needs: test_data_generation
@@ -141,13 +141,13 @@ jobs:
         run: |
           pytest testing/test_${{ github.event.inputs.flow }}.py `
             --flow=${{ github.event.inputs.flow }} `
-            --alluredir=allure-results/${{ github.event.inputs.flow }}
+            --alluredir=allure-results
 
       - name: Upload Allure Results
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.event.inputs.flow }}_allure_results
-          path: allure-results/${{ github.event.inputs.flow }}
+          name: allure-results-${{ matrix.flow }}
+          path: allure-results
 
   independent_component_execution:
     needs: test_data_generation
@@ -183,14 +183,14 @@ jobs:
           pytest testing/test_${{ matrix.flow }}.py `
             --flow=${{ matrix.flow }} `
             --component=${{ matrix.component }} `
-            --alluredir=allure-results/${{ matrix.flow }}_${{ matrix.component }}
+            --alluredir=allure-results
 
       - name: Upload Allure Results
         if: ${{ matrix.component != '' }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.flow }}_${{ matrix.component }}_allure_results
-          path: allure-results/${{ matrix.flow }}_${{ matrix.component }}
+          name: allure-results-${{ matrix.flow }}-${{ matrix.component }}
+          path: allure-results
 
   priority_test_case_execution:
     needs: test_data_generation
@@ -252,6 +252,8 @@ jobs:
       - name: Download All Allure Results
         uses: actions/download-artifact@v4
         with:
+          pattern: allure-results-*
+          merge-multiple: true
           path: downloaded-allure-results
 
       - name: List Downloaded Allure Results
