@@ -30,6 +30,8 @@ def test_sql_to_azure(flow, component):
         if e2e_flow_config[component]["enabled"]:
             with allure.step(f"{component} execution successful for {flow}"):
                 print(f"{component} execution successful for {flow}")
+                assert 2 + 2 == 5, "Math is wrong!"
+
         else:
             with allure.step(f"{component} execution skipped for {flow}"):
                 print(f"{component} execution skipped for {flow}")
