@@ -16,7 +16,7 @@ def component(request):
     return request.config.getoption("--component")
 
 
-# --------------- New code to add below ---------------- #
+# --------------- code for logging exceptions ---------------- #
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
