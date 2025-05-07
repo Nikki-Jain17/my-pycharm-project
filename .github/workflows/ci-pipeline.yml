@@ -186,12 +186,13 @@ jobs:
             --alluredir=allure-results
 
       - name: List Allure Results Before Upload
+        if: always()
         run: |
           echo "Listing files inside allure-results before upload:"
           Get-ChildItem -Path allure-results -Recurse
 
       - name: Upload Allure Results
-        if: ${{ matrix.component != '' }}
+        if: always() && matrix.component != ''
         uses: actions/upload-artifact@v4
         with:
           name: allure-results-${{ matrix.flow }}-${{ matrix.component }}
