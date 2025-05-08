@@ -1,4 +1,5 @@
 import os
+import traceback
 
 import pytest
 import allure
@@ -43,30 +44,29 @@ def pytest_runtest_makereport(item, call):
         # Fetch flow and component
         flow_value = item.funcargs.get('flow', 'Unknown Flow')
         component_value = item.funcargs.get('component', 'Unknown Component')
-        exception_info = str(call.excinfo.value)
 
-        # Create a real log file
-        log_content = (
-            f"Test: {item.name}\n"
+        exception_type = type(call.excinfo.value).__name__
+        exception_message = str(call.excinfo.value)
+        stack_trace = ''.join(traceback.format_exception(None, call.excinfo.value, call.excinfo.tb))
+
+        # Prepare log content
+        failure_details = (
             f"Flow: {flow_value}\n"
             f"Component: {component_value}\n"
-            f"Exception: {exception_info}\n"
+            f"Exception Type: {exception_type}\n"
+            f"Exception Message: {exception_message}\n\n"
+            f"Stack Trace:\n{stack_trace}"
         )
 
-        log_filename = f"{item.name}_error_log.txt"
-        log_filepath = os.path.join("allure-results", log_filename)  # Save it inside allure-results
-
-        os.makedirs(os.path.dirname(log_filepath), exist_ok=True)
-        with open(log_filepath, "w") as f:
-            f.write(log_content)
-
-        # Attach the real file to Allure
-        with open(log_filepath, "rb") as f:
+        # Attach to Allure
+        with allure.step(f"Failure in test: {item.name}"):
             allure.attach(
-                f.read(),
+                failure_details,
                 name="Failure_Log_File",
                 attachment_type=allure.attachment_type.TEXT
             )
 
-        # Also log in console
-        logger.error(log_content)
+        # Also log into console (or pytest captured logs)
+        logger.error(f"Test '{item.name}' failed")
+        logger.error(failure_details)
+

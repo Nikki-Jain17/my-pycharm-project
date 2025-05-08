@@ -33,7 +33,7 @@ def test_sql_to_azure(flow, component):
         if e2e_flow_config[component]["enabled"]:
             with allure.step(f"{component} execution successful for {flow}"):
                 logger.info(f"{component} execution successful for {flow}")
-                assert 2 + 2 == 5, "Math is wrong!"
+                result = 10 / 0  # Will raise ZeroDivisionError naturally
 
         else:
             with allure.step(f"{component} execution skipped for {flow}"):
