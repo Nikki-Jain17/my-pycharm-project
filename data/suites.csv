@@ -1,2 +1,2 @@
 "Status","Start Time","Stop Time","Duration in ms","Parent Suite","Suite","Sub Suite","Test Class","Test Method","Name","Description"
-"failed","Wed May 07 17:36:10 UTC 2025","Wed May 07 17:36:10 UTC 2025","0","testing","SQL to Azure Suite","","","","test_sql_to_azure",""
+"broken","Thu May 08 08:09:22 UTC 2025","Thu May 08 08:09:22 UTC 2025","0","testing","SQL to Azure Suite","","","","test_sql_to_azure",""

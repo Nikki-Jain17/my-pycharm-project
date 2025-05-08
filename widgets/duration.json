@@ -1,1 +1,1 @@
-[{"uid":"9675024e74b61ceb","name":"test_sql_to_azure","time":{"start":1746639370120,"stop":1746639370120,"duration":0},"status":"failed","severity":"normal"}]
+[{"uid":"dcded594419717fc","name":"test_sql_to_azure","time":{"start":1746691762238,"stop":1746691762238,"duration":0},"status":"broken","severity":"normal"}]
