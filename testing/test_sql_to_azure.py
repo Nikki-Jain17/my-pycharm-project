@@ -16,7 +16,7 @@ def test_sql_to_azure(flow, component):
     with allure.step(f"Running component: {component}"):
         logger.info(f"Running flow: {flow}")
 
-    e2e_flow_config = load_config(f'{flow}/e2eflow.yml')
+    e2e_flow_config = load_config(f'{flow}/e2e_flow.yml')
 
     if component is None or component == "none":
         # End-to-end mode: Run **all components** one by one
@@ -33,7 +33,7 @@ def test_sql_to_azure(flow, component):
         if e2e_flow_config[component]["enabled"]:
             with allure.step(f"{component} execution successful for {flow}"):
                 logger.info(f"{component} execution successful for {flow}")
-                result = 10 / 0  # Will raise ZeroDivisionError naturally
+                #result = 10 / 0  # Will raise ZeroDivisionError naturally
 
         else:
             with allure.step(f"{component} execution skipped for {flow}"):
