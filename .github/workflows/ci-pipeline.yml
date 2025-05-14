@@ -2,7 +2,13 @@ name: End-to-End Test Execution Pipeline
 
 on:
   push:
+    branches:
+      - main
+      - feature/test-gha
   pull_request:
+    branches:
+      - main
+      - feature/test-gha
   workflow_dispatch:
     inputs:
       flow:
