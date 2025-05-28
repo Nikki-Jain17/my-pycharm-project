@@ -321,10 +321,10 @@
 name: Run Selenium Tests
 
 on:
-#  push:
-#    branches: [ main ]
+  push:
+    branches: [ "*" ]
   pull_request:
-    branches: [ main ]
+    branches: [ "*" ]
 
 jobs:
   test:
