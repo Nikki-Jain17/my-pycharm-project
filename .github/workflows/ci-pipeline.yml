@@ -1,313 +1,378 @@
-name: End-to-End Test Execution Pipeline
+#name: End-to-End Test Execution Pipeline
+#
+#on:
+#  push:
+#    branches:
+#      - main
+#      - feature/test-gha
+#  pull_request:
+#    branches:
+#      - main
+#      - feature/test-gha
+#  workflow_dispatch:
+#    inputs:
+#      flow:
+#        description: "Select end-to-end flow"
+#        required: true
+#        default: "ALL"
+#        type: choice
+#        options:
+#          - ALL
+#          - sql_to_azure
+#          - nas_to_azure
+#          - s3_to_azure
+#          - sybase_to_azure
+#          - HDFS_to_Azure
+#          - REST_API_to_Azure
+#
+#      component:
+#        description: "Select components to execute"
+#        required: false
+#        default: "none"
+#        type: choice
+#        options:
+#          - none
+#          - register_virtual_dataset
+#          - register_physical_dataset
+#          - register_schema
+#          - register_task
+#          - register_task_flows
+#          - data_reconciliation
+#
+#      priority:
+#        description: "Select priority level"
+#        required: false
+#        default: "none"
+#        type: choice
+#        options:
+#          - none
+#          - P1
+#          - P2
+#          - P3
+#
+#jobs:
+#
+#  # Step 1: Test Data Check and Creation
+#  test_data_generation:
+#    runs-on: windows-latest
+#    outputs:
+#      createTestData: ${{ steps.read-flag.outputs.createTestData }}
+#    steps:
+#      - name: Checkout Repository
+#        uses: actions/checkout@v3
+#
+#      - name: Install YAML Dependencies
+#        run: pip install pyyaml
+#
+#      - name: Read createTestData Flag (PowerShell)
+#        id: read-flag
+#        shell: pwsh
+#        run: |
+#          $jsonContent = python -c "import yaml, json; print(json.dumps(yaml.safe_load(open('config.yaml'))))"
+#          $config = $jsonContent | ConvertFrom-Json
+#          echo "createTestData=$($config.createTestData)" | Out-File -FilePath $env:GITHUB_ENV -Append
+#
+#      - name: Show Flag Value
+#        run: echo "createTestData is ${{ env.createTestData }}"
+#
+#      - name: Install Dependencies
+#        if: env.createTestData == 'true'
+#        run: pip install -r requirements.txt
+#
+#      - name: Run Test Data Generation (If Flag is True)
+#        if: env.createTestData == 'true'
+#        working-directory: metadata_driven
+#        run: python TestDataGenerationViaMetadata.py
+#
+#      - name: List Generated Files
+#        run: dir metadata_driven
+#
+#      - name: Upload Generated Test Data
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: generated-trade-data
+#          path: metadata_driven/trade_data_with_line_numbers.csv
+#
+#  # Step 2: Parent Job - Test Case Execution
+#  all_workflows_execution:
+#    needs: test_data_generation
+#    if: ${{ github.event.inputs.flows == 'ALL' && github.event.inputs.priority == 'none' && github.event.inputs.component == 'none' }}
+#    runs-on: windows-latest
+#    strategy:
+#      matrix:
+#        flow:
+#          - sql_to_azure
+#          - nas_to_azure
+#          - s3_to_azure
+#          - sybase_to_azure
+#          - HDFS_to_Azure
+#          - REST_API_to_Azure
+#    steps:
+#      - name: Checkout Repository
+#        uses: actions/checkout@v3
+#
+#      - name: Install Dependencies
+#        run: pip install -r requirements.txt
+#
+#      - name: Install Allure Dependencies
+#        run: pip install allure-pytest
+#
+#      - name: Run Pytest for ${{ matrix.flow }} with Allure
+#        run: pytest testing/test_${{ matrix.flow }}.py --alluredir=allure-results
+#
+#      - name: Upload Allure Results
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: allure-results-${{ matrix.flow }}
+#          path: allure-results
+#
+#  end_to_end_workflow_execution:
+#    needs: test_data_generation
+#    if: ${{ github.event.inputs.flow != 'ALL' && github.event.inputs.flow != '' && github.event.inputs.flow != null && github.event.inputs.component == 'none' }}
+#    strategy:
+#      matrix:
+#        flow: ${{ fromJSON(format('["{0}"]', github.event.inputs.flow)) }}
+#    runs-on: windows-latest
+#    steps:
+#      - name: Checkout Repository
+#        uses: actions/checkout@v3
+#
+#      - name: Install Dependencies
+#        run: pip install -r requirements.txt
+#
+#      - name: Install Allure Dependencies
+#        run: pip install allure-pytest
+#
+#      - name: Run selected end-to-end flow
+#        run: |
+#          pytest testing/test_${{ github.event.inputs.flow }}.py `
+#            --flow=${{ github.event.inputs.flow }} `
+#            --alluredir=allure-results
+#
+#      - name: Upload Allure Results
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: allure-results-${{ matrix.flow }}
+#          path: allure-results
+#
+#  independent_component_execution:
+#    needs: test_data_generation
+#    if: ${{ github.event.inputs.component != 'none' && github.event.inputs.flow != 'ALL' }}
+#    runs-on: windows-latest
+#
+#    strategy:
+#      matrix:
+#        flow: ${{ fromJSON(format('["{0}"]', github.event.inputs.flow)) }}
+#        component:  ${{ fromJSON(format('["{0}"]', github.event.inputs.component)) }}
+#
+#    steps:
+#      - name: Debug Inputs
+#        run: |
+#          echo "Flow selected: ${{ github.event.inputs.flow }}"
+#          echo "Component selected: ${{ github.event.inputs.component }}"
+#
+#      - name: Checkout Repository
+#        uses: actions/checkout@v3
+#
+#      - name: Install Dependencies
+#        run: pip install -r requirements.txt
+#
+#      - name: Install Allure Dependencies
+#        run: pip install allure-pytest
+#
+#      - name: Run Component ${{ matrix.component }}
+#        if: ${{ github.event_name == 'workflow_dispatch' && matrix.flow != '' && matrix.component != '' }}
+#        run:  |
+#          echo "Flow selected: ${{ matrix.flow }}"
+#          echo "Component selected: ${{ matrix.component }}"
+#
+#          pytest testing/test_${{ matrix.flow }}.py `
+#            --flow=${{ matrix.flow }} `
+#            --component=${{ matrix.component }} `
+#            --alluredir=allure-results
+#
+#      - name: List Allure Results Before Upload
+#        if: always()
+#        run: |
+#          echo "Listing files inside allure-results before upload:"
+#          Get-ChildItem -Path allure-results -Recurse
+#
+#      - name: Upload Allure Results
+#        if: always() && matrix.component != ''
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: allure-results-${{ matrix.flow }}-${{ matrix.component }}
+#          path: allure-results
+#
+#  priority_test_case_execution:
+#    needs: test_data_generation
+#    if: ${{ github.event.inputs.priority != 'none' }}
+#    runs-on: windows-latest
+#    strategy:
+#      matrix:
+#        include:
+#          - flow: sql_to_azure
+#            priority: P1
+#          - flow: nas_to_azure
+#            priority: P1
+#          - flow: s3_to_azure
+#            priority: P2
+#          - flow: sybase_to_azure
+#            priority: P2
+#          - flow: HDFS_to_Azure
+#            priority: P1
+#          - flow: REST_API_to_Azure
+#            priority: P1
+#    steps:
+#      - name: Checkout Repository
+#        uses: actions/checkout@v3
+#
+#      - name: Install Dependencies
+#        run: pip install -r requirements.txt
+#
+#      - name: Install Allure Dependencies
+#        run: pip install allure-pytest
+#
+#      - name: Run Priority Test for ${{ matrix.flow }} - ${{ matrix.priority }}
+#        if: ${{ github.event.inputs.priority == matrix.priority }}
+#        run: pytest testing/test_${{ matrix.flow }}.py -m "${{ matrix.priority }}" --alluredir=allure-results/${{ matrix.flow }}_${{ matrix.priority }}
+#
+#      - name: Upload Allure Results
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: ${{ matrix.flow }}_${{ matrix.priority }}_allure_results
+#          path: allure-results/${{ matrix.flow }}_${{ matrix.priority }}
+#
+#  # Step 3: Final Reporting
+#  reporting:
+#    needs:
+#      - all_workflows_execution
+#      - end_to_end_workflow_execution
+#      - independent_component_execution
+#      - priority_test_case_execution
+#    if: |
+#      always() &&
+#      github.event_name != 'push'
+#    runs-on: windows-latest
+#    steps:
+#      - name: Checkout Repository
+#        uses: actions/checkout@v3
+#
+#      - name: Install Dependencies
+#        run: pip install -r requirements.txt
+#
+#      - name: Download All Allure Results
+#        uses: actions/download-artifact@v4
+#        with:
+#          pattern: allure-results-*
+#          merge-multiple: true
+#          path: downloaded-allure-results
+#
+#      - name: List Downloaded Allure Results
+#        run: |
+#          echo "Showing all files under downloaded-allure-results recursively:"
+#          Get-ChildItem -Path downloaded-allure-results -Recurse | Format-List FullName
+#
+#      - name: Download Allure CLI (Windows)
+#        run: |
+#          curl -L -o allure.zip https://github.com/allure-framework/allure2/releases/download/2.25.0/allure-2.25.0.zip
+#          powershell -Command "Expand-Archive -Path 'allure.zip' -DestinationPath '.'"
+#          echo "${{ github.workspace }}\\allure-2.25.0\\bin" >> $env:GITHUB_PATH
+#
+#      - name: Merge Allure Result Files
+#        run: |
+#          mkdir merged-allure-results
+#          if (Test-Path "downloaded-allure-results") {
+#            Get-ChildItem -Path downloaded-allure-results -Recurse -Include *.json | ForEach-Object {
+#              Copy-Item $_.FullName -Destination merged-allure-results
+#            }
+#          } else {
+#            Write-Host "No downloaded allure results found."
+#          }
+#
+#      - name: Generate Allure Report
+#        run: allure generate merged-allure-results --clean -o allure-report
+#
+#      - name: Upload Allure HTML Report
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: Allure_HTML_Report
+#          path: allure-report
+#
+#      - name: Deploy Allure Report to GitHub Pages
+#        uses: peaceiris/actions-gh-pages@v3
+#        with:
+#          github_token: ${{ secrets.GITHUB_TOKEN }}
+#          publish_branch: gh-pages
+#          publish_dir: allure-report
+#
+#      - name: Install Boto3 for SNS Notification
+#        run: pip install boto3
+#
+#      - name: Send SNS Notification
+#        env:
+#          ENCRYPTED_AWS_ACCESS_KEY_ID: ${{ secrets.ENCRYPTED_AWS_ACCESS_KEY_ID }}
+#          ENCRYPTED_AWS_SECRET_ACCESS_KEY: ${{ secrets.ENCRYPTED_AWS_SECRET_ACCESS_KEY }}
+#          ENCRYPTED_AWS_REGION: ${{ secrets.ENCRYPTED_AWS_REGION }}
+#          ENCRYPTED_SNS_TOPIC_ARN: ${{ secrets.ENCRYPTED_SNS_TOPIC_ARN }}
+#          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}  # Secret key for decryption
+#        run: python secret_manager.py
+
+name: Run Selenium Tests
 
 on:
   push:
+    branches: ["*"]
   pull_request:
+    branches: ["*"]
   workflow_dispatch:
-    inputs:
-      flow:
-        description: "Select end-to-end flow"
-        required: true
-        default: "ALL"
-        type: choice
-        options:
-          - ALL
-          - sql_to_azure
-          - nas_to_azure
-          - s3_to_azure
-          - sybase_to_azure
-          - HDFS_to_Azure
-          - REST_API_to_Azure
 
-      component:
-        description: "Select components to execute"
-        required: false
-        default: "none"
-        type: choice
-        options:
-          - none
-          - register_virtual_dataset
-          - register_physical_dataset
-          - register_schema
-          - register_task
-          - register_task_flows
-          - data_reconciliation
-
-      priority:
-        description: "Select priority level"
-        required: false
-        default: "none"
-        type: choice
-        options:
-          - none
-          - P1
-          - P2
-          - P3
 
 jobs:
-
-  # Step 1: Test Data Check and Creation
-  test_data_generation:
-    runs-on: windows-latest
-    outputs:
-      createTestData: ${{ steps.read-flag.outputs.createTestData }}
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-
-      - name: Install YAML Dependencies
-        run: pip install pyyaml
-
-      - name: Read createTestData Flag (PowerShell)
-        id: read-flag
-        shell: pwsh
-        run: |
-          $jsonContent = python -c "import yaml, json; print(json.dumps(yaml.safe_load(open('config.yaml'))))"
-          $config = $jsonContent | ConvertFrom-Json
-          echo "createTestData=$($config.createTestData)" | Out-File -FilePath $env:GITHUB_ENV -Append
-
-      - name: Show Flag Value
-        run: echo "createTestData is ${{ env.createTestData }}"
-
-      - name: Install Dependencies
-        if: env.createTestData == 'true'
-        run: pip install -r requirements.txt
-
-      - name: Run Test Data Generation (If Flag is True)
-        if: env.createTestData == 'true'
-        working-directory: metadata_driven
-        run: python TestDataGenerationViaMetadata.py
-
-      - name: List Generated Files
-        run: dir metadata_driven
-
-      - name: Upload Generated Test Data
-        uses: actions/upload-artifact@v4
-        with:
-          name: generated-trade-data
-          path: metadata_driven/trade_data_with_line_numbers.csv
-
-  # Step 2: Parent Job - Test Case Execution
-  all_workflows_execution:
-    needs: test_data_generation
-    if: ${{ github.event.inputs.flows == 'ALL' && github.event.inputs.priority == 'none' && github.event.inputs.component == 'none' }}
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        flow:
-          - sql_to_azure
-          - nas_to_azure
-          - s3_to_azure
-          - sybase_to_azure
-          - HDFS_to_Azure
-          - REST_API_to_Azure
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-
-      - name: Install Dependencies
-        run: pip install -r requirements.txt
-
-      - name: Install Allure Dependencies
-        run: pip install allure-pytest
-
-      - name: Run Pytest for ${{ matrix.flow }} with Allure
-        run: pytest testing/test_${{ matrix.flow }}.py --alluredir=allure-results
-
-      - name: Upload Allure Results
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-results-${{ matrix.flow }}
-          path: allure-results
-
-  end_to_end_workflow_execution:
-    needs: test_data_generation
-    if: ${{ github.event.inputs.flow != 'ALL' && github.event.inputs.flow != '' && github.event.inputs.flow != null && github.event.inputs.component == 'none' }}
-    strategy:
-      matrix:
-        flow: ${{ fromJSON(format('["{0}"]', github.event.inputs.flow)) }}
-    runs-on: windows-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-
-      - name: Install Dependencies
-        run: pip install -r requirements.txt
-
-      - name: Install Allure Dependencies
-        run: pip install allure-pytest
-
-      - name: Run selected end-to-end flow
-        run: |
-          pytest testing/test_${{ github.event.inputs.flow }}.py `
-            --flow=${{ github.event.inputs.flow }} `
-            --alluredir=allure-results
-
-      - name: Upload Allure Results
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-results-${{ matrix.flow }}
-          path: allure-results
-
-  independent_component_execution:
-    needs: test_data_generation
-    if: ${{ github.event.inputs.component != 'none' && github.event.inputs.flow != 'ALL' }}
-    runs-on: windows-latest
-
-    strategy:
-      matrix:
-        flow: ${{ fromJSON(format('["{0}"]', github.event.inputs.flow)) }}
-        component:  ${{ fromJSON(format('["{0}"]', github.event.inputs.component)) }}
+  test:
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Debug Inputs
-        run: |
-          echo "Flow selected: ${{ github.event.inputs.flow }}"
-          echo "Component selected: ${{ github.event.inputs.component }}"
-          
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Install Dependencies
-        run: pip install -r requirements.txt
-
-      - name: Install Allure Dependencies
-        run: pip install allure-pytest
-
-      - name: Run Component ${{ matrix.component }}
-        if: ${{ github.event_name == 'workflow_dispatch' && matrix.flow != '' && matrix.component != '' }}
-        run:  |
-          echo "Flow selected: ${{ matrix.flow }}"
-          echo "Component selected: ${{ matrix.component }}"
-          
-          pytest testing/test_${{ matrix.flow }}.py `
-            --flow=${{ matrix.flow }} `
-            --component=${{ matrix.component }} `
-            --alluredir=allure-results
-
-      - name: List Allure Results Before Upload
-        if: always()
-        run: |
-          echo "Listing files inside allure-results before upload:"
-          Get-ChildItem -Path allure-results -Recurse
-
-      - name: Upload Allure Results
-        if: always() && matrix.component != ''
-        uses: actions/upload-artifact@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          name: allure-results-${{ matrix.flow }}-${{ matrix.component }}
-          path: allure-results
+          python-version: '3.11'
 
-  priority_test_case_execution:
-    needs: test_data_generation
-    if: ${{ github.event.inputs.priority != 'none' }}
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        include:
-          - flow: sql_to_azure
-            priority: P1
-          - flow: nas_to_azure
-            priority: P1
-          - flow: s3_to_azure
-            priority: P2
-          - flow: sybase_to_azure
-            priority: P2
-          - flow: HDFS_to_Azure
-            priority: P1
-          - flow: REST_API_to_Azure
-            priority: P1
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+#      - name: Install matching ChromeDriver
+#        run: |
+#          CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+')
+#          wget https://chromedriver.storage.googleapis.com/${CHROME_VERSION}/chromedriver_linux64.zip
+#          unzip chromedriver_linux64.zip
+#          sudo mv chromedriver /usr/bin/chromedriver
+#          sudo chmod +x /usr/bin/chromedriver
+#
+#
+#      - name: Fix Chrome binary path
+#        run: |
+#          if [ ! -f /usr/bin/google-chrome ]; then
+#            sudo ln -s /opt/google/chrome/google-chrome /usr/bin/google-chrome
+#          fi
+#
+#      - name: Confirm Chrome install
+#        run: |
+#          google-chrome --version
+#          which google-chrome
 
-      - name: Install Dependencies
-        run: pip install -r requirements.txt
 
-      - name: Install Allure Dependencies
-        run: pip install allure-pytest
-
-      - name: Run Priority Test for ${{ matrix.flow }} - ${{ matrix.priority }}
-        if: ${{ github.event.inputs.priority == matrix.priority }}
-        run: pytest testing/test_${{ matrix.flow }}.py -m "${{ matrix.priority }}" --alluredir=allure-results/${{ matrix.flow }}_${{ matrix.priority }}
-
-      - name: Upload Allure Results
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.flow }}_${{ matrix.priority }}_allure_results
-          path: allure-results/${{ matrix.flow }}_${{ matrix.priority }}
-
-  # Step 3: Final Reporting
-  reporting:
-    needs:
-      - all_workflows_execution
-      - end_to_end_workflow_execution
-      - independent_component_execution
-      - priority_test_case_execution
-    if: |
-      always() &&
-      github.event_name != 'push'
-    runs-on: windows-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-
-      - name: Install Dependencies
-        run: pip install -r requirements.txt
-
-      - name: Download All Allure Results
-        uses: actions/download-artifact@v4
-        with:
-          pattern: allure-results-*
-          merge-multiple: true
-          path: downloaded-allure-results
-
-      - name: List Downloaded Allure Results
+      - name: Install dependencies
         run: |
-          echo "Showing all files under downloaded-allure-results recursively:"
-          Get-ChildItem -Path downloaded-allure-results -Recurse | Format-List FullName
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          sudo apt-get update
+          sudo apt-get install -y chromium-driver
+          which chromedriver
+          export PATH=$PATH:/usr/lib/chromium-browser/
 
-      - name: Download Allure CLI (Windows)
-        run: |
-          curl -L -o allure.zip https://github.com/allure-framework/allure2/releases/download/2.25.0/allure-2.25.0.zip
-          powershell -Command "Expand-Archive -Path 'allure.zip' -DestinationPath '.'"
-          echo "${{ github.workspace }}\\allure-2.25.0\\bin" >> $env:GITHUB_PATH
-
-      - name: Merge Allure Result Files
-        run: |
-          mkdir merged-allure-results
-          if (Test-Path "downloaded-allure-results") {
-            Get-ChildItem -Path downloaded-allure-results -Recurse -Include *.json | ForEach-Object {
-              Copy-Item $_.FullName -Destination merged-allure-results
-            }
-          } else {
-            Write-Host "No downloaded allure results found."
-          }
-
-      - name: Generate Allure Report
-        run: allure generate merged-allure-results --clean -o allure-report
-
-      - name: Upload Allure HTML Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: Allure_HTML_Report
-          path: allure-report
-
-      - name: Deploy Allure Report to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: allure-report
-
-      - name: Install Boto3 for SNS Notification
-        run: pip install boto3
-
-      - name: Send SNS Notification
+      - name: Run tests
         env:
-          ENCRYPTED_AWS_ACCESS_KEY_ID: ${{ secrets.ENCRYPTED_AWS_ACCESS_KEY_ID }}
-          ENCRYPTED_AWS_SECRET_ACCESS_KEY: ${{ secrets.ENCRYPTED_AWS_SECRET_ACCESS_KEY }}
-          ENCRYPTED_AWS_REGION: ${{ secrets.ENCRYPTED_AWS_REGION }}
-          ENCRYPTED_SNS_TOPIC_ARN: ${{ secrets.ENCRYPTED_SNS_TOPIC_ARN }}
-          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}  # Secret key for decryption
-        run: python secret_manager.py
+          PYTHONUNBUFFERED: 1
+        run: |
+          pytest testing/test_google.py
