@@ -350,6 +350,17 @@ jobs:
           sudo apt update
           sudo apt install -y google-chrome-stable
 
+      - name: Fix Chrome binary path
+        run: |
+          if [ ! -f /usr/bin/google-chrome ]; then
+            sudo ln -s /opt/google/chrome/google-chrome /usr/bin/google-chrome
+          fi
+
+      - name: Confirm Chrome install
+        run: |
+          google-chrome --version
+          which google-chrome
+
 
       - name: Install dependencies
         run: |
