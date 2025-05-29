@@ -4,13 +4,13 @@ import time
 
 
 def test_google_search():
-    # options = webdriver.ChromeOptions()
-    # options.add_argument('--headless')  # Run in headless mode
-    # options.add_argument('--no-sandbox')
-    # options.add_argument('--disable-dev-shm-usage')
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')  # Run in headless mode
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
 
-    # driver = webdriver.Chrome(options=options)
-    driver = webdriver.Edge()
+    driver = webdriver.Chrome(options=options)
+    # driver = webdriver.Edge()
     driver.get("https://www.google.com")
 
     search_box = driver.find_element(By.NAME, "q")
