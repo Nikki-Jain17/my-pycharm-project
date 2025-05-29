@@ -1,6 +1,9 @@
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 import time
+
+from webdriver_manager.chrome import ChromeDriverManager
 
 
 def test_google_search():
@@ -9,7 +12,7 @@ def test_google_search():
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
 
-    driver = webdriver.Chrome(options=options)
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()),options=options)
     # driver = webdriver.Edge()
     driver.get("https://www.google.com")
 
